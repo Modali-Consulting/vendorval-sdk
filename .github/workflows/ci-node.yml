@@ -33,6 +33,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter vendorval typecheck
-      - run: pnpm --filter vendorval test
-      - run: pnpm --filter vendorval build
+      - run: pnpm --filter vendorval-sdk typecheck
+      - run: pnpm --filter vendorval-sdk test
+      - run: pnpm --filter vendorval-sdk build

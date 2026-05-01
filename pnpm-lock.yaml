@@ -8,25 +8,25 @@ importers:
 
   examples/node/live-smoke:
     dependencies:
-      vendorval:
+      vendorval-sdk:
         specifier: workspace:*
         version: link:../../../packages/node
 
   examples/node/polling-verification:
     dependencies:
-      vendorval:
+      vendorval-sdk:
         specifier: workspace:*
         version: link:../../../packages/node
 
   examples/node/quickstart:
     dependencies:
-      vendorval:
+      vendorval-sdk:
         specifier: workspace:*
         version: link:../../../packages/node
 
   examples/node/webhook-handler:
     dependencies:
-      vendorval:
+      vendorval-sdk:
         specifier: workspace:*
         version: link:../../../packages/node
 

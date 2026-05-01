@@ -6,7 +6,7 @@ import httpx
 import pytest
 import respx
 
-from vendorval import Vendorval, VendorvalError
+from vendorval_sdk import Vendorval, VendorvalError
 
 
 def test_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:

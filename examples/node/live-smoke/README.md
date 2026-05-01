@@ -7,8 +7,8 @@ End-to-end smoke test that links the local Node SDK build (`../../../packages/no
 ```bash
 cp .env.example .env
 # edit .env: set VENDORVAL_API_KEY and VENDORVAL_UEI
-pnpm install               # from the repo root, links `vendorval` workspace:*
-pnpm --filter vendorval build
+pnpm install               # from the repo root, links `vendorval-sdk` workspace:*
+pnpm --filter vendorval-sdk build
 pnpm --filter vendorval-example-live-smoke start
 ```
 

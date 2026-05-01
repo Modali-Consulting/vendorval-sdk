@@ -1,15 +1,15 @@
-# vendorval
+# vendorval-sdk
 
 Official Python SDK for the [VendorVal API](https://docs.vendorval.com).
 
 ```bash
-pip install vendorval
+pip install vendorval-sdk
 ```
 
 ## Quick start
 
 ```python
-from vendorval import Vendorval
+from vendorval_sdk import Vendorval
 
 client = Vendorval()  # reads VENDORVAL_API_KEY from env
 
@@ -32,7 +32,7 @@ print(bundle.verification.overall_result)
 
 ```python
 import asyncio
-from vendorval import AsyncVendorval
+from vendorval_sdk import AsyncVendorval
 
 async def main() -> None:
     async with AsyncVendorval() as client:
@@ -58,7 +58,7 @@ API keys are prefixed `vv_test_` (sandbox) or `vv_live_` (production). The SDK v
 ## Errors
 
 ```python
-from vendorval import RateLimitError, ConflictError, ValidationError
+from vendorval_sdk import RateLimitError, ConflictError, ValidationError
 
 try:
     client.verifications.create(...)
@@ -73,7 +73,7 @@ All errors carry `request_id`, `status`, `code`, `type`, `message`.
 ## Webhooks
 
 ```python
-from vendorval import construct_event
+from vendorval_sdk import construct_event
 
 event = construct_event(raw_body, signature_header, secret)
 ```

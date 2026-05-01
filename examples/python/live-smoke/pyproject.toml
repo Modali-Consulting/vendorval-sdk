@@ -4,9 +4,9 @@ version = "0.0.0"
 description = "Live smoke test for the local Python SDK build."
 requires-python = ">=3.9"
 dependencies = [
-    "vendorval",
+    "vendorval-sdk",
     "python-dotenv>=1.0",
 ]
 
 [tool.uv.sources]
-vendorval = { path = "../../../packages/python", editable = true }
+vendorval-sdk = { path = "../../../packages/python", editable = true }

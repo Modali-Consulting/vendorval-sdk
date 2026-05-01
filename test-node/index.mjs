@@ -1,4 +1,4 @@
-import Vendorval from "vendorval";
+import Vendorval from "vendorval-sdk";
 
 const apiKey = process.env.VENDORVAL_API_KEY;
 const uei = process.env.VENDORVAL_UEI;

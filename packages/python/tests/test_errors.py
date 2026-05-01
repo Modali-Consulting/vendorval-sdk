@@ -6,7 +6,7 @@ import httpx
 import pytest
 import respx
 
-from vendorval import (
+from vendorval_sdk import (
     AuthenticationError,
     ConflictError,
     NotFoundError,

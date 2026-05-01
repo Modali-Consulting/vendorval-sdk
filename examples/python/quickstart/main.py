@@ -6,7 +6,7 @@ import json
 import os
 import sys
 
-from vendorval import Vendorval
+from vendorval_sdk import Vendorval
 
 
 def main() -> None:

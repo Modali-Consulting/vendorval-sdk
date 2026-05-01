@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { constructEvent } from "vendorval";
+import { constructEvent } from "vendorval-sdk";
 
 const SECRET = process.env.VENDORVAL_WEBHOOK_SECRET;
 if (!SECRET) {

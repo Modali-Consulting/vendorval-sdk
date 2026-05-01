@@ -9,7 +9,7 @@ import time
 
 import pytest
 
-from vendorval import VendorvalError, construct_event
+from vendorval_sdk import VendorvalError, construct_event
 
 
 def sign(payload: str, secret: str, ts: int) -> str:

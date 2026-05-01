@@ -1,19 +1,19 @@
-# vendorval
+# vendorval-sdk
 
 Official Node.js / TypeScript SDK for the [VendorVal API](https://docs.vendorval.com).
 
 ```bash
-npm install vendorval
+npm install vendorval-sdk
 # or
-pnpm add vendorval
+pnpm add vendorval-sdk
 # or
-yarn add vendorval
+yarn add vendorval-sdk
 ```
 
 ## Quick start
 
 ```ts
-import Vendorval from "vendorval";
+import Vendorval from "vendorval-sdk";
 
 const client = new Vendorval({
   apiKey: process.env.VENDORVAL_API_KEY!,
@@ -66,7 +66,7 @@ import {
   ValidationError,
   NotFoundError,
   ConflictError,
-} from "vendorval";
+} from "vendorval-sdk";
 
 try {
   await client.verifications.create({ /* ... */ });

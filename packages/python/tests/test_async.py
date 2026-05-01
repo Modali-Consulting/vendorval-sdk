@@ -6,7 +6,7 @@ import httpx
 import pytest
 import respx
 
-from vendorval import AsyncVendorval
+from vendorval_sdk import AsyncVendorval
 
 
 @pytest.mark.asyncio
