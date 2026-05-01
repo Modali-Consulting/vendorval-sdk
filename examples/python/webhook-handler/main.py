@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import sys
 
-from vendorval import VendorvalError, construct_event
+from vendorval_sdk import VendorvalError, construct_event
 
 
 def main() -> None:

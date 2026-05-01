@@ -6,6 +6,6 @@
     "start": "node --env-file=.env index.mjs"
   },
   "dependencies": {
-    "vendorval": "workspace:*"
+    "vendorval-sdk": "workspace:*"
   }
 }

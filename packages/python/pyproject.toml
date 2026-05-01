@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "vendorval"
-version = "0.1.0"
+name = "vendorval-sdk"
+version = "0.2.0"
 description = "Official Python SDK for the VendorVal API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -46,7 +46,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/vendorval"]
+packages = ["src/vendorval_sdk"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src", "tests", "README.md", "LICENSE", "CHANGELOG.md", "pyproject.toml"]
@@ -68,4 +68,4 @@ ignore = ["E501"]
 python_version = "3.9"
 strict = true
 mypy_path = "src"
-packages = ["vendorval"]
+packages = ["vendorval_sdk"]

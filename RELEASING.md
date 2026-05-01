@@ -2,14 +2,14 @@
 
 Each SDK has its own version timeline. Tag prefixes determine which package gets released.
 
-## Node (`packages/node` → npm `vendorval`)
+## Node (`packages/node` → npm `vendorval-sdk`)
 
 1. Update `packages/node/package.json` `version` and `packages/node/CHANGELOG.md`.
 2. Commit on `main`: `git commit -am "release(node): v0.X.Y"`.
 3. Tag: `git tag node-v0.X.Y && git push --tags`.
 4. The `release-node.yml` workflow runs `pnpm publish --access public --provenance` using OIDC.
 
-## Python (`packages/python` → PyPI `vendorval`)
+## Python (`packages/python` → PyPI `vendorval-sdk`)
 
 1. Update `packages/python/pyproject.toml` `version` and `packages/python/CHANGELOG.md`.
 2. Commit on `main`: `git commit -am "release(python): v0.X.Y"`.
@@ -18,7 +18,7 @@ Each SDK has its own version timeline. Tag prefixes determine which package gets
 
 ### One-time PyPI Trusted Publishing setup
 
-Configure a Trusted Publisher under [PyPI Project Settings → Publishing](https://pypi.org/manage/project/vendorval/settings/publishing/):
+Configure a Trusted Publisher under [PyPI Project Settings → Publishing](https://pypi.org/manage/project/vendorval-sdk/settings/publishing/):
 
 - Owner: `Modali-Consulting`
 - Repository: `vendorval-sdk`
@@ -36,7 +36,7 @@ git tag node-v0.1.0-rc.0
 git tag python-v0.1.0-rc.0
 ```
 
-The release workflows publish RCs as `vendorval@0.1.0-rc.0` (`--tag next` on npm) and `vendorval==0.1.0rc0` on PyPI.
+The release workflows publish RCs as `vendorval-sdk@0.2.0-rc.0` (`--tag next` on npm) and `vendorval-sdk==0.2.0rc0` on PyPI.
 
 ## API version pinning
 

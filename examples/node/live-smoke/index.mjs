@@ -3,7 +3,7 @@
 // Loads VENDORVAL_API_KEY (required), VENDORVAL_UEI (required), and an
 // optional VENDORVAL_BASE_URL via `node --env-file=.env`, then performs a
 // single `entities.lookup` against the live API and prints the JSON result.
-import Vendorval from "vendorval";
+import Vendorval from "vendorval-sdk";
 
 const apiKey = process.env.VENDORVAL_API_KEY;
 const uei = process.env.VENDORVAL_UEI;

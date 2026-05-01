@@ -7,6 +7,6 @@
     "start": "node --env-file=.env index.mjs"
   },
   "dependencies": {
-    "vendorval": "file:../packages/node"
+    "vendorval-sdk": "file:../packages/node"
   }
 }

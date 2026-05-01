@@ -8,7 +8,7 @@ import httpx
 import pytest
 import respx
 
-from vendorval import ValidationError, Vendorval
+from vendorval_sdk import ValidationError, Vendorval
 
 
 @respx.mock

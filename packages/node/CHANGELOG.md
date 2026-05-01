@@ -1,4 +1,20 @@
-# vendorval (Node)
+# vendorval-sdk (Node)
+
+## 0.2.0 — Unreleased
+
+**Breaking:** Renamed npm package from `vendorval` to `vendorval-sdk`. Update consumers:
+
+```diff
+- npm install vendorval
++ npm install vendorval-sdk
+```
+
+```diff
+- import Vendorval from "vendorval";
++ import Vendorval from "vendorval-sdk";
+```
+
+The default export, named exports, and runtime behaviour are unchanged.
 
 ## 0.1.0 — Unreleased
 

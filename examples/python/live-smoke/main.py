@@ -13,7 +13,7 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from vendorval import Vendorval
+from vendorval_sdk import Vendorval
 
 
 def main() -> None:

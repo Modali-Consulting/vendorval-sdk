@@ -4,8 +4,8 @@ Official client libraries for the [VendorVal API](https://docs.vendorval.com).
 
 | Language | Package | Source |
 |----------|---------|--------|
-| Node / TypeScript | [`vendorval`](https://www.npmjs.com/package/vendorval) on npm | [`packages/node`](./packages/node) |
-| Python | [`vendorval`](https://pypi.org/project/vendorval/) on PyPI | [`packages/python`](./packages/python) |
+| Node / TypeScript | [`vendorval-sdk`](https://www.npmjs.com/package/vendorval-sdk) on npm | [`packages/node`](./packages/node) |
+| Python | [`vendorval-sdk`](https://pypi.org/project/vendorval-sdk/) on PyPI | [`packages/python`](./packages/python) |
 
 Both SDKs target the VendorVal REST API (`https://api.vendorval.com/v1`) and ship the same surface: entity lookup, verification (with polling helper), monitoring, providers, usage, and jobs.
 
@@ -14,11 +14,11 @@ Both SDKs target the VendorVal REST API (`https://api.vendorval.com/v1`) and shi
 ### Node / TypeScript
 
 ```bash
-npm install vendorval
+npm install vendorval-sdk
 ```
 
 ```ts
-import Vendorval from "vendorval";
+import Vendorval from "vendorval-sdk";
 
 const client = new Vendorval({ apiKey: process.env.VENDORVAL_API_KEY });
 
@@ -30,11 +30,11 @@ const result = await client.entities.lookup({
 ### Python
 
 ```bash
-pip install vendorval
+pip install vendorval-sdk
 ```
 
 ```python
-from vendorval import Vendorval
+from vendorval_sdk import Vendorval
 
 client = Vendorval()  # reads VENDORVAL_API_KEY from env
 
@@ -46,8 +46,8 @@ result = client.entities.lookup(identifiers={"uei": "ABCD12345678"})
 ```text
 vendorval-sdk/
   packages/
-    node/        # TypeScript SDK (publishes to npm as `vendorval`)
-    python/      # Python SDK (publishes to PyPI as `vendorval`)
+    node/        # TypeScript SDK (publishes to npm as `vendorval-sdk`)
+    python/      # Python SDK (publishes to PyPI as `vendorval-sdk`)
   specs/
     openapi.json # Snapshot of the API's OpenAPI spec, mirrored from vendorval-api
   examples/      # Per-language runnable examples

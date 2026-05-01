@@ -1,4 +1,20 @@
-# vendorval (Python)
+# vendorval-sdk (Python)
+
+## 0.2.0 — Unreleased
+
+**Breaking:** Renamed PyPI distribution from `vendorval` to `vendorval-sdk` and import path from `vendorval` to `vendorval_sdk` to avoid collisions with the `vendorval` Frappe app and other downstream packages that want to claim the `vendorval` namespace. Update consumers:
+
+```diff
+- pip install vendorval
++ pip install vendorval-sdk
+```
+
+```diff
+- from vendorval import Vendorval
++ from vendorval_sdk import Vendorval
+```
+
+The public class names (`Vendorval`, `AsyncVendorval`, error types, `construct_event`, …) and their behaviour are unchanged.
 
 ## 0.1.0 — Unreleased
 
