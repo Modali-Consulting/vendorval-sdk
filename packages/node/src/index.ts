@@ -34,6 +34,8 @@ export type {
   LookupRefresh,
   LookupRequest,
   LookupResponse,
+  VerifyIdentifierObject,
+  VerifyIdentifiers,
   VerifyRequest,
 } from "./types/api.js";
 export type {

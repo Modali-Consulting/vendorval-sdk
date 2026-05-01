@@ -70,8 +70,17 @@ export interface CreateVerificationRequest {
   };
 }
 
+// Object-keyed identifier input accepted by `/v1/verify`. Mirrors the keys
+// the API allows (the canonical IDENTIFIER_TYPES — `name` and `dba` are
+// fuzzy-lookup helpers, not identifiers, so they're excluded here).
+export type VerifyIdentifierObject = Omit<LookupIdentifiers, "name" | "dba">;
+
+// `/v1/verify` accepts identifiers as either the recommended object form
+// (e.g. `{ uei: "..." }`) or the legacy array of `{type, value}` pairs.
+export type VerifyIdentifiers = VerifyIdentifierObject | IdentifierInput[];
+
 export interface VerifyRequest {
-  identifiers: IdentifierInput[];
+  identifiers: VerifyIdentifiers;
   legal_name?: string;
   entity_type?: EntityType;
   country?: string;

@@ -15,13 +15,30 @@ from .._errors import APITimeoutError
 from .._models import Response, VerificationBundleResponse
 from .._pagination import Page
 from .._request import ResolvedConfig, execute_async, execute_sync, prepare
+from ..types import VerifyIdentifiers
 
 _TERMINAL = {"completed", "failed"}
 
 
+def _serialize_identifiers(
+    identifiers: VerifyIdentifiers,
+) -> Mapping[str, str] | list[dict[str, str]]:
+    """Pass identifiers through unchanged in either supported shape.
+
+    The API accepts both the object-keyed form (e.g. ``{"uei": "..."}``) and
+    the legacy list of ``{"type": ..., "value": ...}`` pairs, so we just
+    shallow-copy whichever the caller gave us. Items are iterated via
+    ``.items()`` rather than passed to ``dict(...)`` directly so the
+    TypedDict variants in :data:`VerifyIdentifiers` typecheck cleanly.
+    """
+    if isinstance(identifiers, Mapping):
+        return {str(key): str(value) for key, value in identifiers.items()}
+    return [{str(key): str(value) for key, value in item.items()} for item in identifiers]
+
+
 def _build_verify_body(
     *,
-    identifiers: list[dict[str, str]],
+    identifiers: VerifyIdentifiers,
     checks: list[str],
     legal_name: str | None,
     entity_type: str | None,
@@ -31,7 +48,7 @@ def _build_verify_body(
     options: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     body: dict[str, Any] = {
-        "identifiers": list(identifiers),
+        "identifiers": _serialize_identifiers(identifiers),
         "checks": list(checks),
     }
     if legal_name is not None:
@@ -57,7 +74,7 @@ class VerificationsResource:
     def create(
         self,
         *,
-        identifiers: list[dict[str, str]],
+        identifiers: VerifyIdentifiers,
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -125,7 +142,7 @@ class VerificationsResource:
     def create_and_wait(
         self,
         *,
-        identifiers: builtins.list[dict[str, str]],
+        identifiers: VerifyIdentifiers,
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -179,7 +196,7 @@ class AsyncVerificationsResource:
     async def create(
         self,
         *,
-        identifiers: list[dict[str, str]],
+        identifiers: VerifyIdentifiers,
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -247,7 +264,7 @@ class AsyncVerificationsResource:
     async def create_and_wait(
         self,
         *,
-        identifiers: builtins.list[dict[str, str]],
+        identifiers: VerifyIdentifiers,
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,

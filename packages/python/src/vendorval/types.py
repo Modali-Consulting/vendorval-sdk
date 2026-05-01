@@ -7,7 +7,8 @@ TypedDicts for editor support without committing to strict shapes.
 from __future__ import annotations
 
 import sys
-from typing import Any, Literal
+from collections.abc import Mapping
+from typing import Any, Literal, Union
 
 if sys.version_info >= (3, 11):
     from typing import TypedDict
@@ -37,6 +38,35 @@ SamRefreshMode = Literal["auto", "force", "never"]
 class IdentifierInput(TypedDict):
     type: IdentifierType
     value: str
+
+
+# Object-keyed identifier input accepted by `/v1/verify` (e.g. `{"uei": "..."}`).
+# Mirrors the keys the API allows — `name` and `dba` are fuzzy-lookup helpers,
+# not identifiers, so they're excluded here.
+class VerifyIdentifierObject(TypedDict, total=False):
+    uei: str
+    tin: str
+    duns: str
+    cage: str
+    lei: str
+    state_registration: str
+    domain: str
+    phone: str
+
+
+# `/v1/verify` accepts identifiers as either the recommended object form
+# (e.g. `{"uei": "..."}`) or the legacy list of `{type, value}` pairs.
+# All five variants are listed because `list[...]` is invariant in Python
+# typing — `list[dict[str, str]]` is not assignable to `list[Mapping[str, str]]`
+# even though `dict` is a `Mapping`. This single alias is the canonical type
+# used everywhere identifiers cross a public method boundary.
+VerifyIdentifiers = Union[
+    VerifyIdentifierObject,
+    Mapping[str, str],
+    list[IdentifierInput],
+    list[Mapping[str, str]],
+    list[dict[str, str]],
+]
 
 
 class AddressInput(TypedDict, total=False):

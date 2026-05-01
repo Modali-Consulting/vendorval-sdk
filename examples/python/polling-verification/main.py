@@ -18,8 +18,10 @@ def main() -> None:
         raise SystemExit(1)
 
     with Vendorval(api_key=api_key) as client:
+        # `identifiers` accepts either the recommended object form (shown here)
+        # or the legacy list of {"type", "value"} pairs.
         bundle = client.verifications.create_and_wait(
-            identifiers=[{"type": "uei", "value": os.environ.get("VENDORVAL_SMOKE_UEI", "ABCD12345678")}],
+            identifiers={"uei": os.environ.get("VENDORVAL_SMOKE_UEI", "ABCD12345678")},
             legal_name="Acme Federal Services LLC",
             checks=["sam_registration"],
             mode="cached",
