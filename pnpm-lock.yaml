@@ -6,6 +6,12 @@ settings:
 
 importers:
 
+  examples/node/live-smoke:
+    dependencies:
+      vendorval:
+        specifier: workspace:*
+        version: link:../../../packages/node
+
   examples/node/polling-verification:
     dependencies:
       vendorval:

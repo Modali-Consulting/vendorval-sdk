@@ -1,0 +1,12 @@
+[project]
+name = "vendorval-live-smoke"
+version = "0.0.0"
+description = "Live smoke test for the local Python SDK build."
+requires-python = ">=3.9"
+dependencies = [
+    "vendorval",
+    "python-dotenv>=1.0",
+]
+
+[tool.uv.sources]
+vendorval = { path = "../../../packages/python", editable = true }

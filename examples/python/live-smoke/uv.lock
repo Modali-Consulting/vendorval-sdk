@@ -144,7 +144,7 @@ wheels = [
 [[package]]
 name = "vendorval"
 version = "0.1.0"
-source = { editable = "../packages/python" }
+source = { editable = "../../../packages/python" }
 dependencies = [
     { name = "httpx" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
@@ -166,7 +166,7 @@ dev = [
 ]
 
 [[package]]
-name = "vendorval-test"
+name = "vendorval-live-smoke"
 version = "0.0.0"
 source = { virtual = "." }
 dependencies = [
@@ -178,5 +178,5 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0" },
-    { name = "vendorval", editable = "../packages/python" },
+    { name = "vendorval", editable = "../../../packages/python" },
 ]

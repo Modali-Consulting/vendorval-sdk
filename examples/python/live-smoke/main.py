@@ -1,4 +1,10 @@
-"""Live smoke test for the local Python SDK build (../packages/python)."""
+"""Live smoke test for the local Python SDK build (../../../packages/python).
+
+Loads `VENDORVAL_API_KEY` (required), `VENDORVAL_UEI` (required), and an
+optional `VENDORVAL_BASE_URL` from a `.env` file alongside this script,
+then performs a single `entities.lookup` against the live API and prints
+the JSON result.
+"""
 
 from __future__ import annotations
 
@@ -25,8 +31,8 @@ def main() -> None:
         kwargs["base_url"] = base_url
 
     with Vendorval(**kwargs) as client:
-        target = base_url or "https://api.vendorval.com/v1"
-        print(f"Looking up UEI {uei} against {target}...")
+        target = base_url or "https://api.vendorval.com"
+        print(f"Looking up UEI {uei} against {target}/v1...")
         result = client.entities.lookup(identifiers={"uei": uei})
         payload = result.to_dict() if hasattr(result, "to_dict") else result
         print(json.dumps(payload, indent=2, default=str))
