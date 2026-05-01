@@ -46,7 +46,15 @@ async function main() {
   }
 
   const dl = await fetch(asset.browser_download_url, {
-    headers: { Accept: "application/octet-stream", "User-Agent": "vendorval-sdk-sync" },
+    headers: {
+      Accept: "application/octet-stream",
+      "User-Agent": "vendorval-sdk-sync",
+      // Authenticate the download too so this works for private releases
+      // without changing call sites.
+      ...(process.env.GITHUB_TOKEN
+        ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+        : {}),
+    },
   });
   if (!dl.ok) {
     throw new Error(`Download failed: ${dl.status} ${dl.statusText}`);
@@ -58,7 +66,13 @@ async function main() {
   let prev = "";
   try {
     prev = await readFile(OUT, "utf8");
-  } catch {}
+  } catch (err) {
+    // Only the "file doesn't exist yet" case is fine; everything else
+    // (permissions, I/O errors) should fail fast.
+    if (!(err && typeof err === "object" && "code" in err && err.code === "ENOENT")) {
+      throw err;
+    }
+  }
 
   if (prev === normalized) {
     console.log(`No changes (release ${release.tag_name}).`);

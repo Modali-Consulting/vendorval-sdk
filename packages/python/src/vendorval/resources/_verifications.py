@@ -7,6 +7,7 @@ import builtins
 import time
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
@@ -101,7 +102,7 @@ class VerificationsResource:
         return Response(res.data, res.request_id, res.status)
 
     def retrieve(self, verification_id: str) -> Response:
-        prepared = prepare(self._cfg, method="GET", path=f"/v1/verifications/{verification_id}")
+        prepared = prepare(self._cfg, method="GET", path=f"/v1/verifications/{quote(verification_id, safe='')}")
         res = execute_sync(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 
@@ -219,7 +220,7 @@ class AsyncVerificationsResource:
         return Response(res.data, res.request_id, res.status)
 
     async def retrieve(self, verification_id: str) -> Response:
-        prepared = prepare(self._cfg, method="GET", path=f"/v1/verifications/{verification_id}")
+        prepared = prepare(self._cfg, method="GET", path=f"/v1/verifications/{quote(verification_id, safe='')}")
         res = await execute_async(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 
@@ -267,7 +268,7 @@ class AsyncVerificationsResource:
         if verification.get("status") in _TERMINAL:
             return bundle
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         delay = poll_interval
         verification_id = verification["id"]

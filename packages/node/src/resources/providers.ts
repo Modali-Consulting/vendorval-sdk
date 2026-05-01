@@ -10,7 +10,16 @@ export class ProvidersResource {
       method: "GET",
       path: "/v1/providers",
     });
-    const items = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+    const items = Array.isArray(res.data)
+      ? res.data
+      : Array.isArray(res.data?.data)
+        ? res.data.data
+        : null;
+    if (!items) {
+      throw new Error(
+        "Unexpected /v1/providers response shape — expected an array or { data: [...] }",
+      );
+    }
     return new Page(items);
   }
 }

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
@@ -58,7 +59,7 @@ class EntitiesResource:
         return Response(res.data, res.request_id, res.status)
 
     def retrieve(self, entity_id: str) -> Response:
-        prepared = prepare(self._cfg, method="GET", path=f"/v1/entities/{entity_id}")
+        prepared = prepare(self._cfg, method="GET", path=f"/v1/entities/{quote(entity_id, safe='')}")
         res = execute_sync(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 
@@ -110,6 +111,6 @@ class AsyncEntitiesResource:
         return Response(res.data, res.request_id, res.status)
 
     async def retrieve(self, entity_id: str) -> Response:
-        prepared = prepare(self._cfg, method="GET", path=f"/v1/entities/{entity_id}")
+        prepared = prepare(self._cfg, method="GET", path=f"/v1/entities/{quote(entity_id, safe='')}")
         res = await execute_async(self._client, prepared)
         return Response(res.data, res.request_id, res.status)

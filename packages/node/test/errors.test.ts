@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  APIError,
   AuthenticationError,
   ConflictError,
   NotFoundError,
@@ -8,7 +9,6 @@ import {
   RateLimitError,
   ValidationError,
   Vendorval,
-  VendorvalError,
 } from "../src/index.js";
 
 function mockFetchOnce(status: number, body: unknown, headers: Record<string, string> = {}) {
@@ -117,7 +117,7 @@ describe("error mapping", () => {
       }),
     );
     await expect(client(fetchMock).entities.lookup({ identifiers: { uei: "X" } })).rejects.toBeInstanceOf(
-      VendorvalError,
+      APIError,
     );
   });
 });

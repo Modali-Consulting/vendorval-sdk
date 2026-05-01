@@ -107,13 +107,14 @@ export async function performRequest<T>(
   const maxRetries = options.maxRetries ?? client.maxRetries;
   const timeout = options.timeout ?? client.timeout;
 
-  let bodyForSend = options.body;
+  // Generate the idempotency key (if requested) BEFORE the first attempt and
+  // reuse it on every retry. If the first POST succeeded server-side but the
+  // response was lost in transit, the retry sends the same key so the API
+  // can deduplicate. Generating per-attempt would defeat that.
+  let bodyForSend = options.autoIdempotency ? injectIdempotencyKey(options.body) : options.body;
   let lastError: VendorvalError | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
-    if (attempt > 0 && options.autoIdempotency) {
-      bodyForSend = injectIdempotencyKey(bodyForSend);
-    }
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);

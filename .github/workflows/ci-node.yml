@@ -8,12 +8,14 @@ on:
       - "specs/**"
       - ".github/workflows/ci-node.yml"
       - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
   pull_request:
     paths:
       - "packages/node/**"
       - "specs/**"
       - ".github/workflows/ci-node.yml"
       - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
 
 jobs:
   test:

@@ -88,9 +88,12 @@ describe("retry behavior at the client level", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const firstBody = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
     const secondBody = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string);
-    expect(firstBody.options?.idempotency_key).toBeUndefined();
-    expect(typeof secondBody.options.idempotency_key).toBe("string");
-    expect(secondBody.options.idempotency_key.length).toBeGreaterThan(8);
+    // Idempotency key must be present from the first attempt and identical
+    // on the retry — that is the property that lets the API dedupe when the
+    // first request was processed but its response was lost.
+    expect(typeof firstBody.options.idempotency_key).toBe("string");
+    expect(firstBody.options.idempotency_key.length).toBeGreaterThan(8);
+    expect(secondBody.options.idempotency_key).toBe(firstBody.options.idempotency_key);
   });
 
   it("does not retry 4xx", async () => {

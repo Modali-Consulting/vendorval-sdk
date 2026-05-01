@@ -19,6 +19,7 @@ export class EntitiesResource {
       method: "POST",
       path: "/v1/entities",
       body: request,
+      autoIdempotency: true,
     });
     return { ...res.data, _requestId: res.requestId };
   }

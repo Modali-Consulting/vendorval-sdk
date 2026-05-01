@@ -45,11 +45,16 @@ export function decideRetryFromHeaders(
     }
     const reset = headers.get("x-ratelimit-reset");
     if (reset) {
-      const epoch = Date.parse(reset);
-      if (Number.isFinite(epoch)) {
+      // The header may be either an HTTP-date string (Date.parse-compatible)
+      // or a bare unix-epoch-seconds integer. Date.parse returns NaN on the
+      // latter, so detect numeric input first.
+      const epochMs = /^\d+$/.test(reset.trim())
+        ? Number.parseInt(reset, 10) * 1000
+        : Date.parse(reset);
+      if (Number.isFinite(epochMs)) {
         return {
           retry: true,
-          delayMs: Math.min(MAX_DELAY_MS, Math.max(0, epoch - Date.now())),
+          delayMs: Math.min(MAX_DELAY_MS, Math.max(0, epochMs - Date.now())),
         };
       }
     }

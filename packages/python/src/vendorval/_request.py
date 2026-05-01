@@ -169,11 +169,16 @@ def execute_sync(
     client: httpx.Client,
     prepared: Prepared,
 ) -> ApiResponse:
-    body = prepared.json_body
+    # Generate the idempotency key (if requested) before the first attempt and
+    # reuse it across retries so the API can deduplicate when the first POST
+    # succeeded server-side but the response was lost on the network.
+    body = (
+        inject_idempotency_key(prepared.json_body)
+        if prepared.auto_idempotency
+        else prepared.json_body
+    )
     last_error: Exception | None = None
     for attempt in range(prepared.max_retries + 1):
-        if attempt > 0 and prepared.auto_idempotency:
-            body = inject_idempotency_key(body)
         try:
             response = client.request(
                 prepared.method,
@@ -230,11 +235,15 @@ async def execute_async(
 ) -> ApiResponse:
     import asyncio
 
-    body = prepared.json_body
+    # See execute_sync — same rationale: generate the idempotency key once
+    # before the loop so retries reuse it.
+    body = (
+        inject_idempotency_key(prepared.json_body)
+        if prepared.auto_idempotency
+        else prepared.json_body
+    )
     last_error: Exception | None = None
     for attempt in range(prepared.max_retries + 1):
-        if attempt > 0 and prepared.auto_idempotency:
-            body = inject_idempotency_key(body)
         try:
             response = await client.request(
                 prepared.method,

@@ -1,11 +1,32 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Vendorval } from "../src/index.js";
-import { VendorvalError } from "../src/index.js";
+import { Vendorval, VendorvalError } from "../src/index.js";
 
 describe("Vendorval client construction", () => {
-  it("requires an API key", () => {
+  let originalApiKey: string | undefined;
+  let originalBaseUrl: string | undefined;
+
+  beforeEach(() => {
+    originalApiKey = process.env.VENDORVAL_API_KEY;
+    originalBaseUrl = process.env.VENDORVAL_BASE_URL;
     delete process.env.VENDORVAL_API_KEY;
+    delete process.env.VENDORVAL_BASE_URL;
+  });
+
+  afterEach(() => {
+    if (originalApiKey !== undefined) {
+      process.env.VENDORVAL_API_KEY = originalApiKey;
+    } else {
+      delete process.env.VENDORVAL_API_KEY;
+    }
+    if (originalBaseUrl !== undefined) {
+      process.env.VENDORVAL_BASE_URL = originalBaseUrl;
+    } else {
+      delete process.env.VENDORVAL_BASE_URL;
+    }
+  });
+
+  it("requires an API key", () => {
     expect(() => new Vendorval({})).toThrowError(VendorvalError);
   });
 
@@ -34,8 +55,6 @@ describe("Vendorval client construction", () => {
     const c = new Vendorval({});
     expect(c.options.apiKey).toBe("vv_test_fromenv");
     expect(c.options.baseUrl).toBe("https://staging.example");
-    delete process.env.VENDORVAL_API_KEY;
-    delete process.env.VENDORVAL_BASE_URL;
   });
 
   it("calls the API with the bearer token, version header, and json body", async () => {
@@ -66,5 +85,4 @@ describe("Vendorval client construction", () => {
     expect(r.match).toBe("not_found");
     expect(r._requestId).toBe("req_test_1");
   });
-
 });

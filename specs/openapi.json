@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "description": "Placeholder. Run `pnpm sync-spec` to populate from the upstream vendorval-api release."
   },
+  "security": [{ "bearerAuth": [] }],
   "paths": {},
   "components": {
     "securitySchemes": {

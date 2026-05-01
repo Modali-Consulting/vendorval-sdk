@@ -1,8 +1,12 @@
 import Vendorval from "vendorval";
 
-const client = new Vendorval({
-  apiKey: process.env.VENDORVAL_API_KEY,
-});
+const apiKey = process.env.VENDORVAL_API_KEY;
+if (!apiKey) {
+  console.error("Missing VENDORVAL_API_KEY. Export it before running this example.");
+  process.exit(1);
+}
+
+const client = new Vendorval({ apiKey });
 
 const bundle = await client.verifications.createAndWait(
   {

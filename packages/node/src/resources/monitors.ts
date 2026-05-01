@@ -11,6 +11,7 @@ export class MonitorsResource {
       method: "POST",
       path: "/v1/monitors",
       body: request,
+      autoIdempotency: true,
     });
     return { ...res.data, _requestId: res.requestId };
   }

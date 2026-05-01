@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import contextlib
 import json
 
 import httpx
+import pytest
 import respx
 
-from vendorval import Vendorval
+from vendorval import ValidationError, Vendorval
 
 
 @respx.mock
@@ -32,7 +32,7 @@ def test_does_not_retry_4xx() -> None:
     )
     with (
         Vendorval(api_key="vv_test_x", base_url="https://api.example", max_retries=3) as client,
-        contextlib.suppress(Exception),
+        pytest.raises(ValidationError),
     ):
         client.entities.lookup(identifiers={})
     assert route.call_count == 1
@@ -59,6 +59,11 @@ def test_auto_idempotency_on_retried_verify() -> None:
     assert route.call_count == 2
     first_body = json.loads(route.calls[0].request.content)
     second_body = json.loads(route.calls[1].request.content)
-    assert "options" not in first_body or "idempotency_key" not in first_body.get("options", {})
-    assert "idempotency_key" in second_body["options"]
-    assert len(second_body["options"]["idempotency_key"]) >= 16
+    # Idempotency key must be present from the very first attempt and must
+    # be identical on the retry — that is the property the API needs to
+    # deduplicate when the first request was processed but its response lost.
+    first_key = first_body["options"]["idempotency_key"]
+    second_key = second_body["options"]["idempotency_key"]
+    assert isinstance(first_key, str)
+    assert len(first_key) >= 16
+    assert first_key == second_key

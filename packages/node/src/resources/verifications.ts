@@ -76,8 +76,13 @@ export class VerificationsResource {
     request: VerifyRequest,
     options: CreateAndWaitOptions = {},
   ): Promise<VerificationBundle> {
+    // Honor an already-aborted signal before we make any server-side change.
+    throwIfAborted(options.signal);
     const timeoutMs = options.timeout ?? 5 * 60_000;
     const pollMin = options.pollInterval ?? 1_000;
+    if (pollMin <= 0) {
+      throw new RangeError("pollInterval must be greater than 0");
+    }
     const pollMax = 30_000;
 
     const initial = await this.create(request);

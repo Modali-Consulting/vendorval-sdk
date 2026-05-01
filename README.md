@@ -43,7 +43,7 @@ result = client.entities.lookup(identifiers={"uei": "ABCD12345678"})
 
 ## Repository layout
 
-```
+```text
 vendorval-sdk/
   packages/
     node/        # TypeScript SDK (publishes to npm as `vendorval`)

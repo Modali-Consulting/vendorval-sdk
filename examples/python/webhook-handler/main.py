@@ -21,6 +21,11 @@ def main() -> None:
         sys.exit(1)
 
     secret = os.environ.get("VENDORVAL_WEBHOOK_SECRET", "")
+    if not secret:
+        print(
+            "Warning: VENDORVAL_WEBHOOK_SECRET is not set; signature verification will fail.",
+            file=sys.stderr,
+        )
     app = Flask(__name__)
 
     @app.post("/webhook")
