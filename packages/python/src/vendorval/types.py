@@ -56,7 +56,17 @@ class VerifyIdentifierObject(TypedDict, total=False):
 
 # `/v1/verify` accepts identifiers as either the recommended object form
 # (e.g. `{"uei": "..."}`) or the legacy list of `{type, value}` pairs.
-VerifyIdentifiers = Union[VerifyIdentifierObject, Mapping[str, str], list[IdentifierInput], list[Mapping[str, str]]]
+# All five variants are listed because `list[...]` is invariant in Python
+# typing — `list[dict[str, str]]` is not assignable to `list[Mapping[str, str]]`
+# even though `dict` is a `Mapping`. This single alias is the canonical type
+# used everywhere identifiers cross a public method boundary.
+VerifyIdentifiers = Union[
+    VerifyIdentifierObject,
+    Mapping[str, str],
+    list[IdentifierInput],
+    list[Mapping[str, str]],
+    list[dict[str, str]],
+]
 
 
 class AddressInput(TypedDict, total=False):

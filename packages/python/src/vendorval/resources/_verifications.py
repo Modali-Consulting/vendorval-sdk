@@ -6,7 +6,7 @@ import asyncio
 import builtins
 import time
 from collections.abc import Mapping
-from typing import Any, Union
+from typing import Any
 from urllib.parse import quote
 
 import httpx
@@ -15,36 +15,30 @@ from .._errors import APITimeoutError
 from .._models import Response, VerificationBundleResponse
 from .._pagination import Page
 from .._request import ResolvedConfig, execute_async, execute_sync, prepare
+from ..types import VerifyIdentifiers
 
 _TERMINAL = {"completed", "failed"}
 
-# Single source of truth for the shape `identifiers` accepts on /v1/verify.
-# Plain `Union[...]` (rather than PEP 604 `A | B` or `typing.TypeAlias`) so
-# the alias evaluates at module import on Python 3.9, the SDK's minimum.
-IdentifiersParam = Union[
-    Mapping[str, str],
-    list[Mapping[str, str]],
-    list[dict[str, str]],
-]
-
 
 def _serialize_identifiers(
-    identifiers: IdentifiersParam,
+    identifiers: VerifyIdentifiers,
 ) -> Mapping[str, str] | list[dict[str, str]]:
     """Pass identifiers through unchanged in either supported shape.
 
     The API accepts both the object-keyed form (e.g. ``{"uei": "..."}``) and
     the legacy list of ``{"type": ..., "value": ...}`` pairs, so we just
-    shallow-copy whichever the caller gave us.
+    shallow-copy whichever the caller gave us. Items are iterated via
+    ``.items()`` rather than passed to ``dict(...)`` directly so the
+    TypedDict variants in :data:`VerifyIdentifiers` typecheck cleanly.
     """
     if isinstance(identifiers, Mapping):
-        return dict(identifiers)
-    return [dict(item) for item in identifiers]
+        return {str(key): str(value) for key, value in identifiers.items()}
+    return [{str(key): str(value) for key, value in item.items()} for item in identifiers]
 
 
 def _build_verify_body(
     *,
-    identifiers: IdentifiersParam,
+    identifiers: VerifyIdentifiers,
     checks: list[str],
     legal_name: str | None,
     entity_type: str | None,
@@ -80,7 +74,7 @@ class VerificationsResource:
     def create(
         self,
         *,
-        identifiers: IdentifiersParam,
+        identifiers: VerifyIdentifiers,
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -148,7 +142,7 @@ class VerificationsResource:
     def create_and_wait(
         self,
         *,
-        identifiers: IdentifiersParam,
+        identifiers: VerifyIdentifiers,
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -202,7 +196,7 @@ class AsyncVerificationsResource:
     async def create(
         self,
         *,
-        identifiers: IdentifiersParam,
+        identifiers: VerifyIdentifiers,
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -270,7 +264,7 @@ class AsyncVerificationsResource:
     async def create_and_wait(
         self,
         *,
-        identifiers: IdentifiersParam,
+        identifiers: VerifyIdentifiers,
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
