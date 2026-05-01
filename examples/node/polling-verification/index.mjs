@@ -8,9 +8,11 @@ if (!apiKey) {
 
 const client = new Vendorval({ apiKey });
 
+// `identifiers` accepts either the recommended object form (shown here)
+// or the legacy array of `{type, value}` pairs.
 const bundle = await client.verifications.createAndWait(
   {
-    identifiers: [{ type: "uei", value: process.env.VENDORVAL_SMOKE_UEI ?? "ABCD12345678" }],
+    identifiers: { uei: process.env.VENDORVAL_SMOKE_UEI ?? "ABCD12345678" },
     legal_name: "Acme Federal Services LLC",
     checks: ["sam_registration"],
     mode: "cached",

@@ -19,9 +19,23 @@ from .._request import ResolvedConfig, execute_async, execute_sync, prepare
 _TERMINAL = {"completed", "failed"}
 
 
+def _serialize_identifiers(
+    identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
+) -> Mapping[str, str] | list[dict[str, str]]:
+    """Pass identifiers through unchanged in either supported shape.
+
+    The API accepts both the object-keyed form (e.g. ``{"uei": "..."}``) and
+    the legacy list of ``{"type": ..., "value": ...}`` pairs, so we just
+    shallow-copy whichever the caller gave us.
+    """
+    if isinstance(identifiers, Mapping):
+        return dict(identifiers)
+    return [dict(item) for item in identifiers]
+
+
 def _build_verify_body(
     *,
-    identifiers: list[dict[str, str]],
+    identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
     checks: list[str],
     legal_name: str | None,
     entity_type: str | None,
@@ -31,7 +45,7 @@ def _build_verify_body(
     options: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     body: dict[str, Any] = {
-        "identifiers": list(identifiers),
+        "identifiers": _serialize_identifiers(identifiers),
         "checks": list(checks),
     }
     if legal_name is not None:
@@ -57,7 +71,7 @@ class VerificationsResource:
     def create(
         self,
         *,
-        identifiers: list[dict[str, str]],
+        identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -125,7 +139,7 @@ class VerificationsResource:
     def create_and_wait(
         self,
         *,
-        identifiers: builtins.list[dict[str, str]],
+        identifiers: Mapping[str, str] | builtins.list[Mapping[str, str]] | builtins.list[dict[str, str]],
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -179,7 +193,7 @@ class AsyncVerificationsResource:
     async def create(
         self,
         *,
-        identifiers: list[dict[str, str]],
+        identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -247,7 +261,7 @@ class AsyncVerificationsResource:
     async def create_and_wait(
         self,
         *,
-        identifiers: builtins.list[dict[str, str]],
+        identifiers: Mapping[str, str] | builtins.list[Mapping[str, str]] | builtins.list[dict[str, str]],
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
