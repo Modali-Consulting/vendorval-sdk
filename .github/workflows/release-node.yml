@@ -14,9 +14,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: npm
     permissions:
       contents: read
-      id-token: write # required for npm provenance attestation
+      id-token: write # required for npm Trusted Publishing (OIDC) + provenance
     steps:
       - uses: actions/checkout@v4
 
@@ -26,9 +27,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
           cache: pnpm
+
+      # Trusted Publishing requires npm >= 11.5.1; setup-node@v4 ships an
+      # older npm bundled with Node 22, so we upgrade in-place.
+      - name: Upgrade npm CLI
+        run: npm install -g npm@latest
 
       - run: pnpm install --frozen-lockfile
 
@@ -47,14 +53,14 @@ jobs:
             echo "value=latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to npm
+      # We use `npm publish` directly instead of `pnpm publish` because the
+      # npm CLI is what implements the OIDC token exchange for Trusted
+      # Publishing. pnpm built the artifacts (dist/) above; npm just ships them.
+      - name: Publish to npm (OIDC)
         working-directory: packages/node
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "Publishing with dist-tag: ${{ steps.tag.outputs.value }}"
-          pnpm publish \
+          npm publish \
             --access public \
             --provenance \
-            --no-git-checks \
             --tag "${{ steps.tag.outputs.value }}"
