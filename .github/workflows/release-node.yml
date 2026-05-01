@@ -1,0 +1,36 @@
+name: Release (Node)
+
+on:
+  push:
+    tags:
+      - "node-v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # for npm provenance via OIDC
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter vendorval test
+      - run: pnpm --filter vendorval build
+      - name: Publish
+        working-directory: packages/node
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *"-rc."* ]]; then
+            pnpm publish --access public --provenance --no-git-checks --tag next
+          else
+            pnpm publish --access public --provenance --no-git-checks
+          fi
