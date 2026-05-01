@@ -49,6 +49,18 @@ describe("Vendorval client construction", () => {
     expect(c.options.apiKey).toBe("custom_internal_key");
   });
 
+  it("rejects non-positive timeout", () => {
+    expect(() => new Vendorval({ apiKey: "vv_test_x", timeout: 0 })).toThrowError(/timeout/);
+    expect(() => new Vendorval({ apiKey: "vv_test_x", timeout: -1 })).toThrowError(/timeout/);
+    expect(() => new Vendorval({ apiKey: "vv_test_x", timeout: NaN })).toThrowError(/timeout/);
+  });
+
+  it("rejects non-integer or negative maxRetries", () => {
+    expect(() => new Vendorval({ apiKey: "vv_test_x", maxRetries: -1 })).toThrowError(/maxRetries/);
+    expect(() => new Vendorval({ apiKey: "vv_test_x", maxRetries: 1.5 })).toThrowError(/maxRetries/);
+    expect(() => new Vendorval({ apiKey: "vv_test_x", maxRetries: NaN })).toThrowError(/maxRetries/);
+  });
+
   it("falls back to env vars", () => {
     process.env.VENDORVAL_API_KEY = "vv_test_fromenv";
     process.env.VENDORVAL_BASE_URL = "https://staging.example/";

@@ -23,6 +23,7 @@ export { API_VERSION, VERSION } from "./version.js";
 export type { ClientOptions } from "./request.js";
 export type {
   CreateAndWaitOptions,
+  RequestOverrides,
 } from "./resources/verifications.js";
 export type {
   CreateEntityRequest,

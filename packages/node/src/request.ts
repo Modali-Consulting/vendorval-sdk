@@ -91,11 +91,33 @@ export function resolveOptions(opts: ClientOptions): ResolvedClientOptions {
     });
   }
 
+  const timeout = opts.timeout ?? DEFAULT_TIMEOUT_MS;
+  if (!Number.isFinite(timeout) || timeout <= 0) {
+    throw new VendorvalError({
+      message: "timeout must be a positive finite number of milliseconds.",
+      status: 0,
+      type: "configuration_error",
+      code: "invalid_timeout",
+      requestId: null,
+    });
+  }
+
+  const maxRetries = opts.maxRetries ?? DEFAULT_MAX_RETRIES;
+  if (!Number.isInteger(maxRetries) || maxRetries < 0) {
+    throw new VendorvalError({
+      message: "maxRetries must be a non-negative integer.",
+      status: 0,
+      type: "configuration_error",
+      code: "invalid_max_retries",
+      requestId: null,
+    });
+  }
+
   return {
     apiKey,
     baseUrl,
-    timeout: opts.timeout ?? DEFAULT_TIMEOUT_MS,
-    maxRetries: opts.maxRetries ?? DEFAULT_MAX_RETRIES,
+    timeout,
+    maxRetries,
     fetch: fetchImpl,
   };
 }
