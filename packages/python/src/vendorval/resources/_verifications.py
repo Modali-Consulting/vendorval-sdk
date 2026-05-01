@@ -6,7 +6,7 @@ import asyncio
 import builtins
 import time
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Union
 from urllib.parse import quote
 
 import httpx
@@ -18,9 +18,18 @@ from .._request import ResolvedConfig, execute_async, execute_sync, prepare
 
 _TERMINAL = {"completed", "failed"}
 
+# Single source of truth for the shape `identifiers` accepts on /v1/verify.
+# Plain `Union[...]` (rather than PEP 604 `A | B` or `typing.TypeAlias`) so
+# the alias evaluates at module import on Python 3.9, the SDK's minimum.
+IdentifiersParam = Union[
+    Mapping[str, str],
+    list[Mapping[str, str]],
+    list[dict[str, str]],
+]
+
 
 def _serialize_identifiers(
-    identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
+    identifiers: IdentifiersParam,
 ) -> Mapping[str, str] | list[dict[str, str]]:
     """Pass identifiers through unchanged in either supported shape.
 
@@ -35,7 +44,7 @@ def _serialize_identifiers(
 
 def _build_verify_body(
     *,
-    identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
+    identifiers: IdentifiersParam,
     checks: list[str],
     legal_name: str | None,
     entity_type: str | None,
@@ -71,7 +80,7 @@ class VerificationsResource:
     def create(
         self,
         *,
-        identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
+        identifiers: IdentifiersParam,
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -139,7 +148,7 @@ class VerificationsResource:
     def create_and_wait(
         self,
         *,
-        identifiers: Mapping[str, str] | builtins.list[Mapping[str, str]] | builtins.list[dict[str, str]],
+        identifiers: IdentifiersParam,
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -193,7 +202,7 @@ class AsyncVerificationsResource:
     async def create(
         self,
         *,
-        identifiers: Mapping[str, str] | list[Mapping[str, str]] | list[dict[str, str]],
+        identifiers: IdentifiersParam,
         checks: list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
@@ -261,7 +270,7 @@ class AsyncVerificationsResource:
     async def create_and_wait(
         self,
         *,
-        identifiers: Mapping[str, str] | builtins.list[Mapping[str, str]] | builtins.list[dict[str, str]],
+        identifiers: IdentifiersParam,
         checks: builtins.list[str],
         legal_name: str | None = None,
         entity_type: str | None = None,
