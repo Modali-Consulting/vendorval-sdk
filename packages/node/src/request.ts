@@ -1,6 +1,7 @@
 import { APIConnectionError, APITimeoutError, errorFromResponse, VendorvalError } from "./errors.js";
 import { generateIdempotencyKey } from "./idempotency.js";
 import { decideRetryFromHeaders } from "./retry.js";
+import { sleep } from "./sleep.js";
 import { API_VERSION, VERSION } from "./version.js";
 
 export type FetchLike = (input: string | URL, init?: RequestInit) => Promise<Response>;
@@ -259,21 +260,4 @@ function injectIdempotencyKey(body: unknown): unknown {
 
 function stripTrailingSlash(s: string): string {
   return s.endsWith("/") ? s.slice(0, -1) : s;
-}
-
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  if (signal?.aborted) {
-    return Promise.reject(signal.reason instanceof Error ? signal.reason : new Error("Aborted"));
-  }
-  return new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-    const onAbort = () => {
-      clearTimeout(timer);
-      reject(signal?.reason instanceof Error ? signal.reason : new Error("Aborted"));
-    };
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
 }

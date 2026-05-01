@@ -1,6 +1,7 @@
 import { APITimeoutError } from "../errors.js";
 import { Page } from "../pagination.js";
 import { performRequest, type ResolvedClientOptions } from "../request.js";
+import { sleep, throwIfAborted } from "../sleep.js";
 import type { CreateVerificationRequest, VerifyRequest } from "../types/api.js";
 import type { Verification, VerificationBundle } from "../types/shared.js";
 
@@ -113,30 +114,3 @@ export class VerificationsResource {
   }
 }
 
-function throwIfAborted(signal: AbortSignal | undefined): void {
-  if (signal?.aborted) {
-    throw signal.reason instanceof Error ? signal.reason : new Error("Aborted");
-  }
-}
-
-function sleep(ms: number, signal: AbortSignal | undefined): Promise<void> {
-  if (ms <= 0) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-    const onAbort = () => {
-      clearTimeout(timer);
-      reject(signal?.reason instanceof Error ? signal.reason : new Error("Aborted"));
-    };
-    if (signal) {
-      if (signal.aborted) {
-        clearTimeout(timer);
-        reject(signal.reason instanceof Error ? signal.reason : new Error("Aborted"));
-        return;
-      }
-      signal.addEventListener("abort", onAbort, { once: true });
-    }
-  });
-}
