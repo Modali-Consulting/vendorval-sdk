@@ -4,33 +4,57 @@ on:
   push:
     tags:
       - "node-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "npm dist-tag (latest, next, beta…)"
+        required: false
+        default: "latest"
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # for npm provenance via OIDC
+      id-token: write # required for npm provenance attestation
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter vendorval typecheck
       - run: pnpm --filter vendorval test
       - run: pnpm --filter vendorval build
-      - name: Publish
+
+      - name: Resolve dist-tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF_NAME}" == *"-rc."* || "${GITHUB_REF_NAME}" == *"-beta."* ]]; then
+            echo "value=next" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
         working-directory: packages/node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [[ "${GITHUB_REF_NAME}" == *"-rc."* ]]; then
-            pnpm publish --access public --provenance --no-git-checks --tag next
-          else
-            pnpm publish --access public --provenance --no-git-checks
-          fi
+          echo "Publishing with dist-tag: ${{ steps.tag.outputs.value }}"
+          pnpm publish \
+            --access public \
+            --provenance \
+            --no-git-checks \
+            --tag "${{ steps.tag.outputs.value }}"

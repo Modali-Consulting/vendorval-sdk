@@ -4,6 +4,16 @@ on:
   push:
     tags:
       - "python-v*"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Where to publish"
+        required: true
+        default: "pypi"
+        type: choice
+        options:
+          - pypi
+          - testpypi
 
 jobs:
   build:
@@ -14,10 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: uv sync --dev
+      - run: uv sync --all-extras --dev
+      - run: uv run ruff check src tests
+      - run: uv run mypy src
       - run: uv run pytest -q
       - run: uv build
       - uses: actions/upload-artifact@v4
@@ -28,14 +42,24 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
-    environment: pypi
+    environment: ${{ inputs.target == 'testpypi' && 'testpypi' || 'pypi' }}
     permissions:
-      id-token: write # PyPI Trusted Publishing
+      id-token: write # PyPI Trusted Publishing — no API token required
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: python-dist
           path: dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Publish to PyPI
+        if: ${{ inputs.target != 'testpypi' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+
+      - name: Publish to TestPyPI
+        if: ${{ inputs.target == 'testpypi' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          repository-url: https://test.pypi.org/legacy/
