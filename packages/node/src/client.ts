@@ -1,0 +1,35 @@
+import { EntitiesResource } from "./resources/entities.js";
+import { JobsResource } from "./resources/jobs.js";
+import { MonitorsResource } from "./resources/monitors.js";
+import { ProvidersResource } from "./resources/providers.js";
+import { UsageResource } from "./resources/usage.js";
+import { VerificationsResource } from "./resources/verifications.js";
+import { resolveOptions, type ClientOptions, type ResolvedClientOptions } from "./request.js";
+import * as webhooksModule from "./webhooks.js";
+import { API_VERSION, VERSION } from "./version.js";
+
+export class Vendorval {
+  static readonly VERSION = VERSION;
+  static readonly API_VERSION = API_VERSION;
+
+  readonly entities: EntitiesResource;
+  readonly verifications: VerificationsResource;
+  readonly monitors: MonitorsResource;
+  readonly providers: ProvidersResource;
+  readonly usage: UsageResource;
+  readonly jobs: JobsResource;
+  readonly webhooks = webhooksModule;
+
+  /** Resolved options. Useful for advanced consumers. */
+  readonly options: ResolvedClientOptions;
+
+  constructor(options: ClientOptions = {}) {
+    this.options = resolveOptions(options);
+    this.entities = new EntitiesResource(this.options);
+    this.verifications = new VerificationsResource(this.options);
+    this.monitors = new MonitorsResource(this.options);
+    this.providers = new ProvidersResource(this.options);
+    this.usage = new UsageResource(this.options);
+    this.jobs = new JobsResource(this.options);
+  }
+}

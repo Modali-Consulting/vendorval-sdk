@@ -1,0 +1,11 @@
+{
+  "name": "vendorval-example-webhook-handler",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "vendorval": "workspace:*"
+  }
+}

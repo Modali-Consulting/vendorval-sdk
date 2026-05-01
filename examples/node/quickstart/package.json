@@ -1,0 +1,11 @@
+{
+  "name": "vendorval-example-quickstart",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "vendorval": "workspace:*"
+  }
+}

@@ -25,3 +25,8 @@ coverage.xml
 # env
 .env
 .env.local
+
+# Local scratch — the canonical live smoke harnesses live under
+# examples/{node,python}/live-smoke/. Keep test-python/ out of commits in
+# case it stays around in working trees.
+test-python/

@@ -1,0 +1,66 @@
+name: Release (Node)
+
+on:
+  push:
+    tags:
+      - "node-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "npm dist-tag (latest, next, beta…)"
+        required: false
+        default: "latest"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # required for npm Trusted Publishing (OIDC) + provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+
+      # Trusted Publishing requires npm >= 11.5.1; setup-node@v4 ships an
+      # older npm bundled with Node 22, so we upgrade in-place.
+      - name: Upgrade npm CLI
+        run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter vendorval typecheck
+      - run: pnpm --filter vendorval test
+      - run: pnpm --filter vendorval build
+
+      - name: Resolve dist-tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF_NAME}" == *"-rc."* || "${GITHUB_REF_NAME}" == *"-beta."* ]]; then
+            echo "value=next" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      # We use `npm publish` directly instead of `pnpm publish` because the
+      # npm CLI is what implements the OIDC token exchange for Trusted
+      # Publishing. pnpm built the artifacts (dist/) above; npm just ships them.
+      - name: Publish to npm (OIDC)
+        working-directory: packages/node
+        run: |
+          echo "Publishing with dist-tag: ${{ steps.tag.outputs.value }}"
+          npm publish \
+            --access public \
+            --provenance \
+            --tag "${{ steps.tag.outputs.value }}"
