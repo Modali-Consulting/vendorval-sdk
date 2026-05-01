@@ -111,4 +111,5 @@ describe("retry behavior at the client level", () => {
     await expect(client.entities.lookup({ identifiers: {} } as never)).rejects.toThrow();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
 });

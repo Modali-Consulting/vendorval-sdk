@@ -79,11 +79,26 @@ def resolve_config(
     url = base_url or os.environ.get("VENDORVAL_BASE_URL") or DEFAULT_BASE_URL
     url = url.rstrip("/")
 
+    resolved_timeout = DEFAULT_TIMEOUT if timeout is None else timeout
+    resolved_max_retries = DEFAULT_MAX_RETRIES if max_retries is None else max_retries
+    if resolved_timeout <= 0:
+        raise VendorvalError(
+            "timeout must be > 0 seconds.",
+            type="configuration_error",
+            code="invalid_timeout",
+        )
+    if resolved_max_retries < 0:
+        raise VendorvalError(
+            "max_retries must be >= 0.",
+            type="configuration_error",
+            code="invalid_max_retries",
+        )
+
     return ResolvedConfig(
         api_key=key,
         base_url=url,
-        timeout=DEFAULT_TIMEOUT if timeout is None else timeout,
-        max_retries=DEFAULT_MAX_RETRIES if max_retries is None else max_retries,
+        timeout=resolved_timeout,
+        max_retries=resolved_max_retries,
     )
 
 

@@ -152,7 +152,7 @@ export async function performRequest<T>(
       }
       if (attempt >= maxRetries) throw lastError;
       const { delayMs } = decideRetryFromHeaders(attempt, 0, new Headers());
-      await sleep(delayMs || 500 * 2 ** attempt);
+      await sleep(delayMs || 500 * 2 ** attempt, externalAbort);
       continue;
     } finally {
       clearTimeout(timer);
@@ -175,7 +175,7 @@ export async function performRequest<T>(
     const decision = decideRetryFromHeaders(attempt, response.status, response.headers);
 
     if (decision.retry && attempt < maxRetries) {
-      await sleep(decision.delayMs);
+      await sleep(decision.delayMs, externalAbort);
       continue;
     }
 
@@ -261,6 +261,19 @@ function stripTrailingSlash(s: string): string {
   return s.endsWith("/") ? s.slice(0, -1) : s;
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  if (signal?.aborted) {
+    return Promise.reject(signal.reason instanceof Error ? signal.reason : new Error("Aborted"));
+  }
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal?.reason instanceof Error ? signal.reason : new Error("Aborted"));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
 }

@@ -80,8 +80,11 @@ export class VerificationsResource {
     throwIfAborted(options.signal);
     const timeoutMs = options.timeout ?? 5 * 60_000;
     const pollMin = options.pollInterval ?? 1_000;
-    if (pollMin <= 0) {
-      throw new RangeError("pollInterval must be greater than 0");
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+      throw new RangeError("timeout must be a positive finite number of milliseconds");
+    }
+    if (!Number.isFinite(pollMin) || pollMin <= 0) {
+      throw new RangeError("pollInterval must be a positive finite number of milliseconds");
     }
     const pollMax = 30_000;
 

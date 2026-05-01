@@ -18,7 +18,13 @@ class MonitorsResource:
 
     def create(self, *, entity_id: str, checks: list[str], cadence: str) -> Response:
         body: dict[str, Any] = {"entity_id": entity_id, "checks": list(checks), "cadence": cadence}
-        prepared = prepare(self._cfg, method="POST", path="/v1/monitors", body=body)
+        prepared = prepare(
+            self._cfg,
+            method="POST",
+            path="/v1/monitors",
+            body=body,
+            auto_idempotency=True,
+        )
         res = execute_sync(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 
@@ -55,7 +61,13 @@ class AsyncMonitorsResource:
 
     async def create(self, *, entity_id: str, checks: list[str], cadence: str) -> Response:
         body: dict[str, Any] = {"entity_id": entity_id, "checks": list(checks), "cadence": cadence}
-        prepared = prepare(self._cfg, method="POST", path="/v1/monitors", body=body)
+        prepared = prepare(
+            self._cfg,
+            method="POST",
+            path="/v1/monitors",
+            body=body,
+            auto_idempotency=True,
+        )
         res = await execute_async(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 

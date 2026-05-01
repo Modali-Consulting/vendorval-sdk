@@ -54,7 +54,13 @@ class EntitiesResource:
             body["country"] = country
         if address is not None:
             body["address"] = dict(address)
-        prepared = prepare(self._cfg, method="POST", path="/v1/entities", body=body)
+        prepared = prepare(
+            self._cfg,
+            method="POST",
+            path="/v1/entities",
+            body=body,
+            auto_idempotency=True,
+        )
         res = execute_sync(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 
@@ -106,7 +112,13 @@ class AsyncEntitiesResource:
             body["country"] = country
         if address is not None:
             body["address"] = dict(address)
-        prepared = prepare(self._cfg, method="POST", path="/v1/entities", body=body)
+        prepared = prepare(
+            self._cfg,
+            method="POST",
+            path="/v1/entities",
+            body=body,
+            auto_idempotency=True,
+        )
         res = await execute_async(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
 

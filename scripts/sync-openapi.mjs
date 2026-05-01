@@ -21,6 +21,10 @@ const ASSET_NAME = "openapi.json";
 const argv = process.argv.slice(2);
 const tagIdx = argv.indexOf("--tag");
 const tag = tagIdx >= 0 ? argv[tagIdx + 1] : null;
+if (tagIdx >= 0 && (tag === undefined || tag.startsWith("--"))) {
+  console.error("--tag requires a value (e.g. --tag v1.2.3)");
+  process.exit(1);
+}
 
 const headers = { Accept: "application/vnd.github+json", "User-Agent": "vendorval-sdk-sync" };
 if (process.env.GITHUB_TOKEN) {
@@ -45,12 +49,14 @@ async function main() {
     throw new Error(`Release ${release.tag_name} has no ${ASSET_NAME} asset.`);
   }
 
-  const dl = await fetch(asset.browser_download_url, {
+  // Use the asset API URL (asset.url), not browser_download_url:
+  // browser_download_url 404s on private repos even with valid auth, while
+  // the API endpoint works for both public and private with `Accept:
+  // application/octet-stream`.
+  const dl = await fetch(asset.url, {
     headers: {
       Accept: "application/octet-stream",
       "User-Agent": "vendorval-sdk-sync",
-      // Authenticate the download too so this works for private releases
-      // without changing call sites.
       ...(process.env.GITHUB_TOKEN
         ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
         : {}),

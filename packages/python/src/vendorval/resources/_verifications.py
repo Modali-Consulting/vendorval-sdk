@@ -136,6 +136,10 @@ class VerificationsResource:
         timeout: float = 5 * 60.0,
         poll_interval: float = 1.0,
     ) -> VerificationBundleResponse:
+        if timeout <= 0:
+            raise ValueError("timeout must be greater than 0")
+        if poll_interval <= 0:
+            raise ValueError("poll_interval must be greater than 0")
         bundle = self.create(
             identifiers=identifiers,
             checks=checks,
@@ -254,6 +258,10 @@ class AsyncVerificationsResource:
         timeout: float = 5 * 60.0,
         poll_interval: float = 1.0,
     ) -> VerificationBundleResponse:
+        if timeout <= 0:
+            raise ValueError("timeout must be greater than 0")
+        if poll_interval <= 0:
+            raise ValueError("poll_interval must be greater than 0")
         bundle = await self.create(
             identifiers=identifiers,
             checks=checks,
