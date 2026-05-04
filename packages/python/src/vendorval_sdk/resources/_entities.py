@@ -23,6 +23,7 @@ class EntitiesResource:
         identifiers: Mapping[str, str],
         legal_name: str | None = None,
         mode: str | None = None,
+        country: str | None = None,
         options: Mapping[str, Any] | None = None,
     ) -> Response:
         body: dict[str, Any] = {"identifiers": dict(identifiers)}
@@ -30,6 +31,8 @@ class EntitiesResource:
             body["legal_name"] = legal_name
         if mode is not None:
             body["mode"] = mode
+        if country is not None:
+            body["country"] = country
         if options is not None:
             body["options"] = dict(options)
         prepared = prepare(self._cfg, method="POST", path="/v1/entities/lookup", body=body)
@@ -81,6 +84,7 @@ class AsyncEntitiesResource:
         identifiers: Mapping[str, str],
         legal_name: str | None = None,
         mode: str | None = None,
+        country: str | None = None,
         options: Mapping[str, Any] | None = None,
     ) -> Response:
         body: dict[str, Any] = {"identifiers": dict(identifiers)}
@@ -88,6 +92,8 @@ class AsyncEntitiesResource:
             body["legal_name"] = legal_name
         if mode is not None:
             body["mode"] = mode
+        if country is not None:
+            body["country"] = country
         if options is not None:
             body["options"] = dict(options)
         prepared = prepare(self._cfg, method="POST", path="/v1/entities/lookup", body=body)

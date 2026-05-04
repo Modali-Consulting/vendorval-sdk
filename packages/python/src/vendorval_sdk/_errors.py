@@ -50,6 +50,35 @@ class ValidationError(VendorvalError):
     pass
 
 
+class CountryError(ValidationError):
+    """422 raised when a request can't be routed to a country/provider.
+
+    Subclass of :class:`ValidationError` so existing 4xx catch-all handlers
+    continue to match. Use ``err.code`` to switch on the specific failure:
+
+      - ``country_required`` — no explicit country and nothing inferable
+      - ``country_not_supported`` — resolved country isn't in SUPPORTED_COUNTRIES
+      - ``identifier_not_supported_for_country`` — e.g. ``tin`` with ``country='DE'``
+      - ``check_not_supported_for_country`` — e.g. ``sam_registration`` for an EU country
+      - ``country_mismatch`` — explicit country contradicts identifier inference
+
+    The ``details`` attribute carries a :data:`CountryErrorDetails`-shaped dict
+    with ``country_resolved``, ``identifiers_seen``, ``recommended_action``,
+    ``supported_countries``, and (for ``country_mismatch``) ``candidates``.
+    """
+
+
+_COUNTRY_ERROR_CODES = frozenset(
+    {
+        "country_required",
+        "country_not_supported",
+        "identifier_not_supported_for_country",
+        "check_not_supported_for_country",
+        "country_mismatch",
+    }
+)
+
+
 class NotFoundError(VendorvalError):
     pass
 
@@ -91,6 +120,11 @@ _STATUS_TO_CLS: dict[int, type[VendorvalError]] = {
     401: AuthenticationError,
     403: PermissionError,
     404: NotFoundError,
+    # 422 is an invalid-request status the API uses for semantic-validation
+    # failures (Phase J country routing emits 422 + CountryError, but other
+    # semantic violations also land here). Mapping to ValidationError keeps
+    # catch-all 4xx handlers working consistently.
+    422: ValidationError,
     429: RateLimitError,
     502: ProviderError,
 }
@@ -156,6 +190,16 @@ def error_from_response(
             **common,
             retry_after=parse_retry_after(headers.get("retry-after")),
         )
+
+    # Phase J: 422 envelopes with a country-routing code surface as CountryError
+    # (a ValidationError subclass) so consumers can switch on `err.code` and
+    # inspect the structured `err.details` payload. The `isinstance(code, str)`
+    # guard handles malformed payloads where `code` is a non-string (e.g. a list
+    # or dict) — set membership on a frozenset[str] would otherwise TypeError
+    # on unhashable values, breaking error normalization for the rest of the
+    # response.
+    if status == 422 and isinstance(code, str) and code in _COUNTRY_ERROR_CODES:
+        return CountryError(**common)
 
     cls = _STATUS_TO_CLS.get(status, APIError)
     return cls(**common)

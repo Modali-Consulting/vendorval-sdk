@@ -56,6 +56,52 @@ export class PermissionError extends VendorvalError {}
 
 export class ValidationError extends VendorvalError {}
 
+/**
+ * 422 errors raised when a request can't be routed to a country/provider:
+ *   - `country_required` — no explicit country and nothing inferable
+ *   - `country_not_supported` — resolved country isn't in SUPPORTED_COUNTRIES
+ *   - `identifier_not_supported_for_country` — e.g. `tin` with `country: "DE"`
+ *   - `check_not_supported_for_country` — e.g. `sam_registration` for an EU country
+ *   - `country_mismatch` — explicit country contradicts identifier inference
+ *
+ * The structured `details` payload (typed as `CountryErrorDetails`) carries
+ * `country_resolved`, `identifiers_seen`, `recommended_action`,
+ * `supported_countries`, and `candidates` where applicable. Subclass of
+ * `ValidationError` so existing 422 catch-all handlers still match.
+ */
+export interface CountryErrorDetails {
+  /** The country we resolved to (set on country_not_supported / mismatch / partial paths). */
+  country_resolved?: string;
+  /** Identifier types that were present on the request body. */
+  identifiers_seen?: string[];
+  /** Suggested next step (e.g. `"supply_country_field"`, `"use_vat_validation_for_eu"`). */
+  recommended_action?: string;
+  /** ISO 3166-1 alpha-2 codes the API currently supports (set on country_not_supported). */
+  supported_countries?: string[];
+  /** When `code === "country_mismatch"`, the conflicting country candidates. */
+  candidates?: Array<{ country: string; source: string; via?: string }>;
+}
+
+export type CountryErrorCode =
+  | "country_required"
+  | "country_not_supported"
+  | "identifier_not_supported_for_country"
+  | "check_not_supported_for_country"
+  | "country_mismatch";
+
+export class CountryError extends ValidationError {
+  declare readonly code: CountryErrorCode;
+  declare readonly details: CountryErrorDetails | undefined;
+}
+
+const COUNTRY_ERROR_CODES: ReadonlySet<string> = new Set<CountryErrorCode>([
+  "country_required",
+  "country_not_supported",
+  "identifier_not_supported_for_country",
+  "check_not_supported_for_country",
+  "country_mismatch",
+]);
+
 export class NotFoundError extends VendorvalError {}
 
 export class ConflictError extends VendorvalError {
@@ -102,6 +148,11 @@ const STATUS_CONSTRUCTORS: Record<number, new (init: VendorvalErrorInit) => Vend
   401: AuthenticationError,
   403: PermissionError,
   404: NotFoundError,
+  // 422 is an invalid-request status the API uses for semantic-validation
+  // failures (Phase J country routing emits 422 + CountryError, but other
+  // semantic violations also land here). Mapping to ValidationError keeps
+  // catch-all 4xx handlers working consistently.
+  422: ValidationError,
   429: RateLimitError,
   502: ProviderError,
 };
@@ -148,6 +199,13 @@ export function errorFromResponse(args: {
       ...init,
       retryAfter: parseRetryAfter(headers),
     });
+  }
+
+  // Phase J: 422 envelopes with a country-routing code surface as CountryError
+  // (a ValidationError subclass) so consumers can switch on `err.code` and
+  // inspect typed `err.details`.
+  if (status === 422 && COUNTRY_ERROR_CODES.has(code)) {
+    return new CountryError(init);
   }
 
   const Ctor = STATUS_CONSTRUCTORS[status] ?? APIError;

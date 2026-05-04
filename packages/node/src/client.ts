@@ -1,5 +1,6 @@
 import { EntitiesResource } from "./resources/entities.js";
 import { JobsResource } from "./resources/jobs.js";
+import { MetaResource } from "./resources/meta.js";
 import { MonitorsResource } from "./resources/monitors.js";
 import { ProvidersResource } from "./resources/providers.js";
 import { UsageResource } from "./resources/usage.js";
@@ -16,6 +17,7 @@ export class Vendorval {
   readonly verifications: VerificationsResource;
   readonly monitors: MonitorsResource;
   readonly providers: ProvidersResource;
+  readonly meta: MetaResource;
   readonly usage: UsageResource;
   readonly jobs: JobsResource;
   readonly webhooks = webhooksModule;
@@ -29,6 +31,7 @@ export class Vendorval {
     this.verifications = new VerificationsResource(this.options);
     this.monitors = new MonitorsResource(this.options);
     this.providers = new ProvidersResource(this.options);
+    this.meta = new MetaResource(this.options);
     this.usage = new UsageResource(this.options);
     this.jobs = new JobsResource(this.options);
   }

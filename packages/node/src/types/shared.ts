@@ -10,13 +10,51 @@ export type IdentifierType =
   | "duns"
   | "cage"
   | "lei"
+  | "vat_id"
   | "name"
   | "dba"
   | "domain"
   | "phone"
   | "state_registration";
 
-export type CheckType = "sam_registration" | "uei_validation" | "tin_match";
+export type CheckType =
+  | "sam_registration"
+  | "uei_validation"
+  | "tin_match"
+  | "vat_validation"
+  | "lei_validation"
+  | "sanctions_screening";
+
+/**
+ * ISO 3166-1 alpha-2 country codes the API currently supports.
+ * Mirrors `vendorval-api/packages/common/src/country/supported-countries.ts`.
+ * The full list is also discoverable at runtime via `client.meta.listSupportedCountries()`.
+ */
+export type CountryCode =
+  | "US"
+  // EU 27
+  | "AT" | "BE" | "BG" | "CY" | "CZ" | "DE" | "DK" | "EE" | "ES" | "FI"
+  | "FR" | "GR" | "HR" | "HU" | "IE" | "IT" | "LT" | "LU" | "LV" | "MT"
+  | "NL" | "PL" | "PT" | "RO" | "SE" | "SI" | "SK";
+
+export type EntityRegion = "north_america" | "european_union";
+
+export type CountryTier = "full" | "limited";
+
+export interface SupportedCountrySummary {
+  code: CountryCode;
+  name: string;
+  region: EntityRegion;
+  tier: CountryTier;
+  available_identifiers: IdentifierType[];
+  available_checks: CheckType[];
+}
+
+export interface SupportedCountriesResponse {
+  object: "list";
+  total_count: number;
+  data: SupportedCountrySummary[];
+}
 
 export type VerificationMode = "cached" | "realtime";
 

@@ -7,6 +7,7 @@ export {
   APITimeoutError,
   AuthenticationError,
   ConflictError,
+  CountryError,
   NotFoundError,
   PermissionError,
   ProviderError,
@@ -14,6 +15,7 @@ export {
   ValidationError,
   VendorvalError,
 } from "./errors.js";
+export type { CountryErrorCode, CountryErrorDetails } from "./errors.js";
 
 export { Page } from "./pagination.js";
 export { generateIdempotencyKey } from "./idempotency.js";
@@ -43,7 +45,10 @@ export type {
   AddressRecord,
   BulkJob,
   CheckType,
+  CountryCode,
+  CountryTier,
   Entity,
+  EntityRegion,
   EntityType,
   IdentifierInput,
   IdentifierRecord,
@@ -53,6 +58,8 @@ export type {
   MonitorEvent,
   Provider,
   SamRefreshMode,
+  SupportedCountriesResponse,
+  SupportedCountrySummary,
   UsageSummary,
   Verification,
   VerificationBundle,

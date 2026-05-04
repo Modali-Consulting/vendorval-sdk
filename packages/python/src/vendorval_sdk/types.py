@@ -17,9 +17,39 @@ else:
 
 
 IdentifierType = Literal[
-    "uei", "tin", "duns", "cage", "lei", "name", "dba", "domain", "phone", "state_registration"
+    "uei",
+    "tin",
+    "duns",
+    "cage",
+    "lei",
+    "vat_id",
+    "name",
+    "dba",
+    "domain",
+    "phone",
+    "state_registration",
 ]
-CheckType = Literal["sam_registration", "uei_validation", "tin_match"]
+CheckType = Literal[
+    "sam_registration",
+    "uei_validation",
+    "tin_match",
+    "vat_validation",
+    "lei_validation",
+    "sanctions_screening",
+]
+
+# ISO 3166-1 alpha-2 country codes the API currently supports. Mirrors
+# `vendorval-api/packages/common/src/country/supported-countries.ts`. The full
+# list is also discoverable at runtime via `client.meta.list_supported_countries()`.
+CountryCode = Literal[
+    "US",
+    # EU 27
+    "AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI",
+    "FR", "GR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT",
+    "NL", "PL", "PT", "RO", "SE", "SI", "SK",
+]
+EntityRegion = Literal["north_america", "european_union"]
+CountryTier = Literal["full", "limited"]
 VerificationMode = Literal["cached", "realtime"]
 EntityType = Literal[
     "corporation",
@@ -49,9 +79,38 @@ class VerifyIdentifierObject(TypedDict, total=False):
     duns: str
     cage: str
     lei: str
+    vat_id: str
     state_registration: str
     domain: str
     phone: str
+
+
+class SupportedCountrySummary(TypedDict):
+    code: CountryCode
+    name: str
+    region: EntityRegion
+    tier: CountryTier
+    available_identifiers: list[IdentifierType]
+    available_checks: list[CheckType]
+
+
+class SupportedCountriesResponse(TypedDict):
+    object: Literal["list"]
+    total_count: int
+    data: list[SupportedCountrySummary]
+
+
+class CountryErrorDetails(TypedDict, total=False):
+    """Structured `details` payload on the five 422 country routing errors.
+
+    See https://docs.vendorval.com/api-reference/errors for the full envelope.
+    """
+
+    country_resolved: str
+    identifiers_seen: list[str]
+    recommended_action: str
+    supported_countries: list[str]
+    candidates: list[Mapping[str, Any]]
 
 
 # `/v1/verify` accepts identifiers as either the recommended object form
