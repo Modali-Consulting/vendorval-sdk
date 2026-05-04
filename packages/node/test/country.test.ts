@@ -250,7 +250,7 @@ describe("CountryError mapping", () => {
       .catch((e: CountryError) => {
         expect(e.code).toBe("country_mismatch");
         expect(e.details?.candidates).toHaveLength(2);
-        expect(e.details?.candidates?.[0].country).toBe("DE");
+        expect(e.details?.candidates?.[0]?.country).toBe("DE");
       });
   });
 
