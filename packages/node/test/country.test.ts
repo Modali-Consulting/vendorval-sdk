@@ -196,11 +196,15 @@ describe("CountryError mapping", () => {
       recommended_action: "use_a_supported_country",
     });
 
-    await c.entities.lookup({ identifiers: { domain: "x.test" }, country: "JP" }).catch((e: CountryError) => {
-      expect(e).toBeInstanceOf(CountryError);
-      expect(e.code).toBe("country_not_supported");
-      expect(e.details?.country_resolved).toBe("JP");
-      expect(e.details?.supported_countries).toContain("US");
+    await expect(
+      c.entities.lookup({ identifiers: { domain: "x.test" }, country: "JP" }),
+    ).rejects.toMatchObject({
+      name: "CountryError",
+      code: "country_not_supported",
+      details: expect.objectContaining({
+        country_resolved: "JP",
+        supported_countries: expect.arrayContaining(["US"]),
+      }),
     });
   });
 
@@ -211,9 +215,14 @@ describe("CountryError mapping", () => {
       identifiers_seen: ["tin"],
     });
 
-    await c.entities.lookup({ identifiers: { tin: "12-3456789" }, country: "DE" }).catch((e: CountryError) => {
-      expect(e.code).toBe("identifier_not_supported_for_country");
-      expect(e.details?.recommended_action).toBe("use_vat_id_for_eu_entities");
+    await expect(
+      c.entities.lookup({ identifiers: { tin: "12-3456789" }, country: "DE" }),
+    ).rejects.toMatchObject({
+      name: "CountryError",
+      code: "identifier_not_supported_for_country",
+      details: expect.objectContaining({
+        recommended_action: "use_vat_id_for_eu_entities",
+      }),
     });
   });
 
@@ -223,17 +232,17 @@ describe("CountryError mapping", () => {
       recommended_action: "use_vat_validation_for_eu",
     });
 
-    await c.verifications
-      .create({
+    await expect(
+      c.verifications.create({
         identifiers: [{ type: "tin", value: "12-3456789" }],
         checks: ["tin_match"],
         country: "DE",
-      })
-      .catch((e: CountryError) => {
-        expect(e).toBeInstanceOf(CountryError);
-        expect(e.code).toBe("check_not_supported_for_country");
-        expect(e.details?.country_resolved).toBe("DE");
-      });
+      }),
+    ).rejects.toMatchObject({
+      name: "CountryError",
+      code: "check_not_supported_for_country",
+      details: expect.objectContaining({ country_resolved: "DE" }),
+    });
   });
 
   it("country_mismatch → CountryError with conflicting candidates", async () => {
@@ -245,13 +254,18 @@ describe("CountryError mapping", () => {
       recommended_action: "remove_explicit_country_or_fix_identifier",
     });
 
-    await c.entities
-      .lookup({ identifiers: { vat_id: "FR12345678901" }, country: "DE" })
-      .catch((e: CountryError) => {
-        expect(e.code).toBe("country_mismatch");
-        expect(e.details?.candidates).toHaveLength(2);
-        expect(e.details?.candidates?.[0]?.country).toBe("DE");
-      });
+    await expect(
+      c.entities.lookup({ identifiers: { vat_id: "FR12345678901" }, country: "DE" }),
+    ).rejects.toMatchObject({
+      name: "CountryError",
+      code: "country_mismatch",
+      details: expect.objectContaining({
+        candidates: expect.arrayContaining([
+          expect.objectContaining({ country: "DE" }),
+          expect.objectContaining({ country: "FR" }),
+        ]),
+      }),
+    });
   });
 
   it("non-country 422 codes map to plain ValidationError, NOT CountryError", async () => {

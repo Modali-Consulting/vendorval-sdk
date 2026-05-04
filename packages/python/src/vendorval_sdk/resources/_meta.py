@@ -7,9 +7,14 @@ the result locally.
 
 `get_supported_country(code)` is a focused single-country variant.
 
-Both endpoints are public (no API key required) but routed through the
-standard request pipeline so retries / timeouts / observability all work
-the same way.
+The underlying HTTP endpoints are public on the server — no special API-key
+permissions are required. The SDK still routes through the standard request
+pipeline so retries / timeouts / observability work the same way as
+authenticated calls, which means a key is required to construct the client.
+For genuine unauthenticated bootstrap (e.g. a marketing page that needs the
+country list before login), construct the client with a placeholder key and
+``validate_api_key=False``, or call ``GET /v1/meta/countries`` directly with
+``httpx``.
 """
 
 from __future__ import annotations

@@ -193,8 +193,12 @@ def error_from_response(
 
     # Phase J: 422 envelopes with a country-routing code surface as CountryError
     # (a ValidationError subclass) so consumers can switch on `err.code` and
-    # inspect the structured `err.details` payload.
-    if status == 422 and code in _COUNTRY_ERROR_CODES:
+    # inspect the structured `err.details` payload. The `isinstance(code, str)`
+    # guard handles malformed payloads where `code` is a non-string (e.g. a list
+    # or dict) — set membership on a frozenset[str] would otherwise TypeError
+    # on unhashable values, breaking error normalization for the rest of the
+    # response.
+    if status == 422 and isinstance(code, str) and code in _COUNTRY_ERROR_CODES:
         return CountryError(**common)
 
     cls = _STATUS_TO_CLS.get(status, APIError)
