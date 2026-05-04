@@ -10,6 +10,7 @@ from ._request import resolve_config
 from ._version import API_VERSION, VERSION
 from ._webhooks import construct_event
 from .resources._entities import AsyncEntitiesResource
+from .resources._meta import AsyncMetaResource
 from .resources._monitors import AsyncMonitorsResource
 from .resources._simple import AsyncJobsResource, AsyncProvidersResource, AsyncUsageResource
 from .resources._verifications import AsyncVerificationsResource
@@ -54,6 +55,7 @@ class AsyncVendorval:
         self.verifications = AsyncVerificationsResource(self._cfg, self._http)
         self.monitors = AsyncMonitorsResource(self._cfg, self._http)
         self.providers = AsyncProvidersResource(self._cfg, self._http)
+        self.meta = AsyncMetaResource(self._cfg, self._http)
         self.usage = AsyncUsageResource(self._cfg, self._http)
         self.jobs = AsyncJobsResource(self._cfg, self._http)
         self.webhooks = _Webhooks()

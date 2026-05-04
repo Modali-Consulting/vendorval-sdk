@@ -10,6 +10,7 @@ from ._request import resolve_config
 from ._version import API_VERSION, VERSION
 from ._webhooks import construct_event
 from .resources._entities import EntitiesResource
+from .resources._meta import MetaResource
 from .resources._monitors import MonitorsResource
 from .resources._simple import JobsResource, ProvidersResource, UsageResource
 from .resources._verifications import VerificationsResource
@@ -57,6 +58,7 @@ class Vendorval:
         self.verifications = VerificationsResource(self._cfg, self._http)
         self.monitors = MonitorsResource(self._cfg, self._http)
         self.providers = ProvidersResource(self._cfg, self._http)
+        self.meta = MetaResource(self._cfg, self._http)
         self.usage = UsageResource(self._cfg, self._http)
         self.jobs = JobsResource(self._cfg, self._http)
         self.webhooks = _Webhooks()

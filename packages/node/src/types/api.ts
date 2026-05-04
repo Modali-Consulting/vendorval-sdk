@@ -15,6 +15,8 @@ export interface LookupIdentifiers {
   duns?: string;
   cage?: string;
   lei?: string;
+  /** EU VAT identification number, e.g. "DE123456789". The 2-letter prefix is the country. */
+  vat_id?: string;
   name?: string;
   dba?: string;
   domain?: string;
@@ -26,6 +28,13 @@ export interface LookupRequest {
   identifiers: LookupIdentifiers;
   legal_name?: string;
   mode?: LookupMode;
+  /**
+   * ISO 3166-1 alpha-2 country code (e.g. "US", "DE"). Optional — when
+   * omitted the API resolves it via the precedence chain
+   * (identifier inference → org default → 422 country_required).
+   * See https://docs.vendorval.com/guides/country-handling.
+   */
+  country?: string;
   options?: {
     sam_refresh?: SamRefreshMode;
     [key: string]: unknown;

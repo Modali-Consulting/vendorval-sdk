@@ -1,0 +1,64 @@
+"""Meta resource — read-only discovery of supported countries and capabilities.
+
+`list_supported_countries()` returns every country code, region, tier, and
+the currently enabled identifiers + checks for it. Drives the dashboard's
+country picker; SDK consumers should call this once per session and cache
+the result locally.
+
+`get_supported_country(code)` is a focused single-country variant.
+
+Both endpoints are public (no API key required) but routed through the
+standard request pipeline so retries / timeouts / observability all work
+the same way.
+"""
+
+from __future__ import annotations
+
+from urllib.parse import quote
+
+import httpx
+
+from .._models import Response
+from .._request import ResolvedConfig, execute_async, execute_sync, prepare
+
+
+class MetaResource:
+    def __init__(self, cfg: ResolvedConfig, client: httpx.Client) -> None:
+        self._cfg = cfg
+        self._client = client
+
+    def list_supported_countries(self) -> Response:
+        prepared = prepare(self._cfg, method="GET", path="/v1/meta/countries")
+        res = execute_sync(self._client, prepared)
+        return Response(res.data, res.request_id, res.status)
+
+    def get_supported_country(self, code: str) -> Response:
+        normalized = code.strip().upper()
+        prepared = prepare(
+            self._cfg,
+            method="GET",
+            path=f"/v1/meta/countries/{quote(normalized, safe='')}",
+        )
+        res = execute_sync(self._client, prepared)
+        return Response(res.data, res.request_id, res.status)
+
+
+class AsyncMetaResource:
+    def __init__(self, cfg: ResolvedConfig, client: httpx.AsyncClient) -> None:
+        self._cfg = cfg
+        self._client = client
+
+    async def list_supported_countries(self) -> Response:
+        prepared = prepare(self._cfg, method="GET", path="/v1/meta/countries")
+        res = await execute_async(self._client, prepared)
+        return Response(res.data, res.request_id, res.status)
+
+    async def get_supported_country(self, code: str) -> Response:
+        normalized = code.strip().upper()
+        prepared = prepare(
+            self._cfg,
+            method="GET",
+            path=f"/v1/meta/countries/{quote(normalized, safe='')}",
+        )
+        res = await execute_async(self._client, prepared)
+        return Response(res.data, res.request_id, res.status)
