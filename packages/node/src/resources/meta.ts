@@ -41,6 +41,11 @@ export class MetaResource {
     code: CountryCode | string,
   ): Promise<SupportedCountrySummary & { _requestId: string | null }> {
     const normalized = String(code).trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(normalized)) {
+      throw new TypeError(
+        `Invalid country code "${String(code)}". Expected ISO 3166-1 alpha-2 (e.g. "US", "DE").`,
+      );
+    }
     const res = await performRequest<SupportedCountrySummary>(this.client, {
       method: "GET",
       path: `/v1/meta/countries/${encodeURIComponent(normalized)}`,

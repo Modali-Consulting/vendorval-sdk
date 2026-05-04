@@ -19,12 +19,31 @@ country list before login), construct the client with a placeholder key and
 
 from __future__ import annotations
 
+import re
 from urllib.parse import quote
 
 import httpx
 
 from .._models import Response
 from .._request import ResolvedConfig, execute_async, execute_sync, prepare
+
+_COUNTRY_CODE_RE = re.compile(r"^[A-Z]{2}$")
+
+
+def _normalize_country_code(code: str) -> str:
+    """Normalize and validate an ISO 3166-1 alpha-2 country code.
+
+    Trims and uppercases the input, then enforces the alpha-2 shape so that
+    empty / whitespace-only / non-ISO values raise ``ValueError`` up front
+    rather than producing a malformed ``/v1/meta/countries/`` path that
+    silently returns the list endpoint or a 404.
+    """
+    normalized = code.strip().upper()
+    if not _COUNTRY_CODE_RE.match(normalized):
+        raise ValueError(
+            f"Invalid country code {code!r}. Expected ISO 3166-1 alpha-2 (e.g. 'US', 'DE').",
+        )
+    return normalized
 
 
 class MetaResource:
@@ -38,7 +57,7 @@ class MetaResource:
         return Response(res.data, res.request_id, res.status)
 
     def get_supported_country(self, code: str) -> Response:
-        normalized = code.strip().upper()
+        normalized = _normalize_country_code(code)
         prepared = prepare(
             self._cfg,
             method="GET",
@@ -59,7 +78,7 @@ class AsyncMetaResource:
         return Response(res.data, res.request_id, res.status)
 
     async def get_supported_country(self, code: str) -> Response:
-        normalized = code.strip().upper()
+        normalized = _normalize_country_code(code)
         prepared = prepare(
             self._cfg,
             method="GET",
