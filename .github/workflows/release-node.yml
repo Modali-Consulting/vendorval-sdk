@@ -50,20 +50,17 @@ jobs:
             echo "value=latest" >> "$GITHUB_OUTPUT"
           fi
 
-      # Bootstrap publish: npm Trusted Publishing requires the package to
-      # already exist on the registry before a Trusted Publisher can be
-      # configured for it. So the very first release of `vendorval-sdk`
-      # authenticates with NPM_TOKEN; subsequent releases will switch to
-      # pure OIDC (token removed) once the Trusted Publisher is set up
-      # in the package settings on npmjs.com.
+      # We use `npm publish` directly instead of `pnpm publish` because the
+      # npm CLI is what implements the OIDC token exchange for Trusted
+      # Publishing. pnpm built the artifacts (dist/) above; npm just ships them.
       #
-      # `--provenance` still works alongside a token: the publish auth uses
-      # the token, while the provenance attestation is signed via the
-      # GitHub OIDC id-token (id-token: write above).
-      - name: Publish to npm
+      # The first release of vendorval-sdk (v0.2.0) was bootstrapped from a
+      # local machine because npm Trusted Publishing requires the package to
+      # already exist on the registry. From v0.2.1 onward, the Trusted
+      # Publisher configured at https://www.npmjs.com/package/vendorval-sdk/access
+      # supplies the publish credential via OIDC — no NPM_TOKEN needed.
+      - name: Publish to npm (OIDC)
         working-directory: packages/node
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "Publishing with dist-tag: ${{ steps.tag.outputs.value }}"
           npm publish \
