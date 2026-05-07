@@ -159,6 +159,11 @@ class Entity(TypedDict, total=False):
     status: str
     country: str
     confidence: float
+    # Tier A enrichment — populated by SAM hydration. Null until the next
+    # authoritative-source sync.
+    dba_name: str | None
+    website_url: str | None
+    state_of_incorporation: str | None
     created_at: str
     updated_at: str
     identifiers: list[IdentifierRecord]
