@@ -121,6 +121,13 @@ export interface Entity {
   status?: string;
   country: string;
   confidence?: number;
+  /**
+   * Tier A enrichment — populated by SAM hydration. Null until the next
+   * authoritative-source sync; older entities will hydrate on next pull.
+   */
+  dba_name?: string | null;
+  website_url?: string | null;
+  state_of_incorporation?: string | null;
   created_at: string;
   updated_at: string;
   identifiers: IdentifierRecord[];

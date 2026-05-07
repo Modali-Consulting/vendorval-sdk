@@ -48,7 +48,11 @@ export interface LookupRefresh {
 }
 
 export interface LookupResponse {
-  match: "found" | "not_found" | "ambiguous" | "fuzzy";
+  match: "exact" | "fuzzy" | "not_found";
+  /**
+   * Only present on `match: "fuzzy"`. Omitted on `exact` (where it would
+   * conflate identifier strength with match certainty) and `not_found`.
+   */
   confidence?: number;
   matched_on?: IdentifierType[] | string[];
   entity: import("./shared.js").Entity | null;
