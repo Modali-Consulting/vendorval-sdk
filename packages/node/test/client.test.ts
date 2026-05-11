@@ -97,4 +97,157 @@ describe("Vendorval client construction", () => {
     expect(r.match).toBe("not_found");
     expect(r._requestId).toBe("req_test_1");
   });
+
+  // Phase N (Workstream A) — opt-in to the widened per-result enum is
+  // SDK-default. Without this header the API would alias the new values
+  // (clear / exact_match / probable_match) down to the legacy 4-value
+  // enum for backward compatibility.
+  it("auto-attaches Accept-Version on every request", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ match: "not_found", entity: null }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    const client = new Vendorval({
+      apiKey: "vv_test_abc",
+      baseUrl: "https://api.example",
+      fetch: fetchMock,
+    });
+
+    await client.entities.lookup({ identifiers: { uei: "X" } });
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    const headers = init.headers as Record<string, string>;
+    expect(headers["Accept-Version"]).toBe(Vendorval.API_VERSION);
+    // Sanity check the date string format. Lex-compared on the server
+    // (apps/api/src/plugins/accept-version.ts), so the YYYY-MM-DD
+    // shape matters.
+    expect(headers["Accept-Version"]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("auto-attaches Accept-Version on GET requests too (not just POST)", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ object: "list", data: [], total: 0, has_more: false, limit: 50, offset: 0 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      ),
+    );
+    const client = new Vendorval({
+      apiKey: "vv_test_abc",
+      baseUrl: "https://api.example",
+      fetch: fetchMock,
+    });
+
+    await client.certifications.list();
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(String(url)).toContain("/v1/certifications");
+    expect(init.method).toBe("GET");
+    const headers = init.headers as Record<string, string>;
+    expect(headers["Accept-Version"]).toBe(Vendorval.API_VERSION);
+  });
+});
+
+describe("CertificationsResource (Phase N Workstream B)", () => {
+  it("list() forwards filters as query params and unwraps the standard list envelope", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          object: "list",
+          data: [
+            {
+              object: "certification",
+              id: "cert_01",
+              entity_id: "ent_01",
+              issuer: "NY-DMWBD",
+              cert_number: "NY-MWBE-1001",
+              status: "active",
+              issued_at: "2024-01-15",
+              expires_at: "2027-01-15",
+              expiring_soon: false,
+              retrieved_at: "2026-05-11T08:00:00Z",
+              classifications: [
+                { category: "minority_owned", ethnic_subcategory: "african_american", raw_label: "BAA" },
+              ],
+              source: { name: "ny_dmwbd", mapping_version: "ny_dmwbd_v1", retrieved_at: "2026-05-11T08:00:00Z" },
+            },
+          ],
+          total: 1,
+          has_more: false,
+          limit: 50,
+          offset: 0,
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+    const client = new Vendorval({
+      apiKey: "vv_test_abc",
+      baseUrl: "https://api.example",
+      fetch: fetchMock,
+    });
+
+    const page = await client.certifications.list({
+      entity_id: "ent_01",
+      issuer: "NY-DMWBD",
+      status: "active",
+      expiring_within_days: 30,
+      limit: 25,
+    });
+
+    const [url] = fetchMock.mock.calls[0]!;
+    const parsed = new URL(String(url));
+    expect(parsed.searchParams.get("entity_id")).toBe("ent_01");
+    expect(parsed.searchParams.get("issuer")).toBe("NY-DMWBD");
+    expect(parsed.searchParams.get("status")).toBe("active");
+    expect(parsed.searchParams.get("expiring_within_days")).toBe("30");
+    expect(parsed.searchParams.get("limit")).toBe("25");
+
+    expect(page.data).toHaveLength(1);
+    expect(page.data[0]!.issuer).toBe("NY-DMWBD");
+    expect(page.data[0]!.classifications[0]!.category).toBe("minority_owned");
+    // Pagination metadata surfaces on the Page so callers don't re-query
+    // for the count.
+    expect(page.total).toBe(1);
+    expect(page.has_more).toBe(false);
+    expect(page.limit).toBe(50);
+    expect(page.offset).toBe(0);
+  });
+
+  it("retrieve() returns a single Certification and attaches the request id", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          object: "certification",
+          id: "cert_01",
+          entity_id: "ent_01",
+          issuer: "NMSDC",
+          cert_number: "NMSDC-12345",
+          status: "active",
+          issued_at: "2024-08-01",
+          expires_at: "2026-08-01",
+          expiring_soon: true,
+          retrieved_at: "2026-05-11T08:00:00Z",
+          classifications: [],
+          source: { name: "nmsdc", mapping_version: "nmsdc_v1", retrieved_at: "2026-05-11T08:00:00Z" },
+        }),
+        { status: 200, headers: { "content-type": "application/json", "x-request-id": "req_cert_1" } },
+      ),
+    );
+    const client = new Vendorval({
+      apiKey: "vv_test_abc",
+      baseUrl: "https://api.example",
+      fetch: fetchMock,
+    });
+
+    const cert = await client.certifications.retrieve("cert_01");
+
+    expect(cert.id).toBe("cert_01");
+    expect(cert.expiring_soon).toBe(true);
+    expect(cert.classifications).toEqual([]);
+    expect(cert._requestId).toBe("req_cert_1");
+  });
 });

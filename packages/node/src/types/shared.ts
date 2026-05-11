@@ -15,10 +15,22 @@ export type IdentifierType =
   | "dba"
   | "domain"
   | "phone"
-  | "state_registration";
+  // `state_registration` stays as a deprecated alias for `state_entity_id`
+  // during the Phase N transition window. Both are accepted server-side.
+  | "state_registration"
+  // Phase N (Workstream C, memo §4.3) — 6 new issuer-qualified identifier
+  // types. The API accepts them today; adapters that emit them will land
+  // in Phase O.A onwards.
+  | "state_entity_id"
+  | "diversity_cert_id"
+  | "contractor_license_id"
+  | "medicaid_provider_id"
+  | "wcb_employer_number"
+  | "npi";
 
 export type CheckType =
   | "sam_registration"
+  | "sam_exclusion"
   | "uei_validation"
   | "tin_match"
   | "vat_validation"
@@ -134,11 +146,32 @@ export interface Entity {
   addresses: AddressRecord[];
   sam_gov?: Record<string, unknown> | null;
   sources?: Array<Record<string, unknown>>;
+  /**
+   * Phase N (Workstream D) — per-attribute provenance. Maps an entity
+   * column name (`legal_name`, `dba_name`, `website_url`,
+   * `state_of_incorporation`) to the source id that most recently wrote
+   * it. Empty `{}` until the gold-layer reconciler has run. Treat
+   * absence of a key as "not yet attributed", not "no source." See
+   * `/api-reference/lookup#field_attribution--per-attribute-provenance`.
+   */
+  field_attribution?: Record<string, string>;
 }
+
+/**
+ * Per-check result status. The SDK auto-attaches `Accept-Version` (see
+ * `request.ts`) so the wire returns the Phase N (Workstream A) widened
+ * enum verbatim. Legacy values still appear in responses today because
+ * no adapter emits the new ones yet; both shapes are listed in the
+ * union so when adapters DO start emitting the new values, calling
+ * code renders them correctly without a type-only SDK release.
+ */
+export type CheckStatus =
+  | "pass" | "fail" | "inconclusive" | "error" | "pending"
+  | "clear" | "exact_match" | "probable_match";
 
 export interface VerificationResult {
   check_type: CheckType;
-  status: "pass" | "fail" | "inconclusive";
+  status: CheckStatus;
   confidence?: number;
   origin?: string;
   determinism?: string;
@@ -218,4 +251,92 @@ export interface BulkJob {
   succeeded?: number;
   failed?: number;
   result_url?: string | null;
+}
+
+// ─── Certifications (Phase N, Workstream B) ──────────────────────────────
+
+export type CertificationStatus =
+  | "active"
+  | "pending"
+  | "expired"
+  | "suspended"
+  | "revoked"
+  | "denied"
+  | "not_certified";
+
+export type ClassificationCategory =
+  | "small_business"
+  | "minority_owned"
+  | "women_owned"
+  | "veteran_owned"
+  | "service_disabled_veteran"
+  | "disability_owned"
+  | "lgbt_owned";
+
+export type ClassificationEthnicSubcategory =
+  | "african_american"
+  | "hispanic_american"
+  | "asian_pacific_american"
+  | "subcontinent_asian_american"
+  | "native_american"
+  | "other";
+
+export interface Classification {
+  category: ClassificationCategory;
+  /**
+   * Meaningful only when `category === "minority_owned"`. The API CHECK
+   * constraint enforces this — every minority-owned classification
+   * carries a subcategory; no other category does.
+   */
+  ethnic_subcategory: ClassificationEthnicSubcategory | null;
+  /** The issuer's exact original wording, preserved verbatim. */
+  raw_label: string;
+}
+
+export interface Certification {
+  object?: "certification";
+  id: string;
+  entity_id: string;
+  issuer: string;
+  cert_number: string;
+  status: CertificationStatus;
+  issued_at: string | null;
+  expires_at: string | null;
+  /**
+   * Derived at read time from `expires_at` against the per-request
+   * `expiring_within_days` threshold (default 60). Always `false` on
+   * certs with `expires_at: null` (non-expiring like ISO 9001
+   * mid-cycle).
+   */
+  expiring_soon: boolean;
+  retrieved_at: string;
+  classifications: Classification[];
+  source: {
+    name: string;
+    mapping_version: string;
+    retrieved_at: string;
+  };
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CertificationsListResponse {
+  object: "list";
+  data: Certification[];
+  total: number;
+  has_more: boolean;
+  limit: number;
+  offset: number;
+}
+
+export interface CertificationsListParams {
+  entity_id?: string;
+  issuer?: string;
+  status?: CertificationStatus;
+  /** 1–365. Restricts to certs whose `expires_at` is within N days. */
+  expiring_within_days?: number;
+  /** Default 50, max 200. */
+  limit?: number;
+  /** Default 0. */
+  offset?: number;
 }
