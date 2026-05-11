@@ -54,7 +54,9 @@ class CertificationsResource:
 
         Returns the full list envelope verbatim so callers see pagination
         metadata (`total`, `has_more`, `limit`, `offset`) without
-        re-querying for the count. Access rows via `response.data["data"]`.
+        re-querying for the count. Access rows via `response["data"]`,
+        or call `response.to_dict()` to work with the full payload as a
+        plain dictionary.
         """
         prepared = prepare(
             self._cfg,
