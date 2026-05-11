@@ -9,6 +9,7 @@ API routes ship.
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
@@ -79,7 +80,7 @@ class CertificationsResource:
         prepared = prepare(
             self._cfg,
             method="GET",
-            path=f"/v1/certifications/{certification_id}",
+            path=f"/v1/certifications/{quote(certification_id, safe='')}",
         )
         res = execute_sync(self._client, prepared)
         return Response(res.data, res.request_id, res.status)
@@ -120,7 +121,7 @@ class AsyncCertificationsResource:
         prepared = prepare(
             self._cfg,
             method="GET",
-            path=f"/v1/certifications/{certification_id}",
+            path=f"/v1/certifications/{quote(certification_id, safe='')}",
         )
         res = await execute_async(self._client, prepared)
         return Response(res.data, res.request_id, res.status)

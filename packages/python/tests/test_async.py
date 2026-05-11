@@ -23,3 +23,21 @@ async def test_async_lookup() -> None:
         result = await client.entities.lookup(identifiers={"uei": "X"})
     assert result.match == "found"
     assert result.request_id == "req_async_1"
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_async_certifications_retrieve_encodes_id() -> None:
+    route = respx.get("https://api.example/v1/certifications/cert%2F01").mock(
+        return_value=httpx.Response(
+            200,
+            json={"object": "certification", "id": "cert/01", "status": "active"},
+            headers={"x-request-id": "req_async_cert"},
+        )
+    )
+    async with AsyncVendorval(api_key="vv_test_x", base_url="https://api.example") as client:
+        result = await client.certifications.retrieve("cert/01")
+
+    assert route.called
+    assert result.id == "cert/01"
+    assert result.request_id == "req_async_cert"

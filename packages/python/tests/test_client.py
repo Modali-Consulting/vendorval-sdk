@@ -181,3 +181,20 @@ def test_certifications_retrieve_by_id() -> None:
     assert result.expiring_soon is True
     assert result["status"] == "active"
     assert result.request_id == "req_cert"
+
+
+@respx.mock
+def test_certifications_retrieve_encodes_id() -> None:
+    route = respx.get("https://api.example/v1/certifications/cert%2F01").mock(
+        return_value=httpx.Response(
+            200,
+            json={"object": "certification", "id": "cert/01", "status": "active"},
+            headers={"x-request-id": "req_cert_enc"},
+        )
+    )
+    with Vendorval(api_key="vv_test_x", base_url="https://api.example") as client:
+        result = client.certifications.retrieve("cert/01")
+
+    assert route.called
+    assert result.id == "cert/01"
+    assert result.request_id == "req_cert_enc"
