@@ -27,10 +27,22 @@ IdentifierType = Literal[
     "dba",
     "domain",
     "phone",
+    # `state_registration` stays as a deprecated alias for `state_entity_id`
+    # during the Phase N transition window.
     "state_registration",
+    # Phase N (Workstream C, memo §4.3) — 6 new issuer-qualified identifier
+    # types. The API accepts them today; adapters that emit them will land
+    # in Phase O.A onwards.
+    "state_entity_id",
+    "diversity_cert_id",
+    "contractor_license_id",
+    "medicaid_provider_id",
+    "wcb_employer_number",
+    "npi",
 ]
 CheckType = Literal[
     "sam_registration",
+    "sam_exclusion",
     "uei_validation",
     "tin_match",
     "vat_validation",
@@ -83,6 +95,13 @@ class VerifyIdentifierObject(TypedDict, total=False):
     state_registration: str
     domain: str
     phone: str
+    # Phase N (Workstream C) — 6 new issuer-qualified identifier types.
+    state_entity_id: str
+    diversity_cert_id: str
+    contractor_license_id: str
+    medicaid_provider_id: str
+    wcb_employer_number: str
+    npi: str
 
 
 class SupportedCountrySummary(TypedDict):
@@ -170,11 +189,34 @@ class Entity(TypedDict, total=False):
     addresses: list[Any]
     sam_gov: Any | None
     sources: list[Any]
+    # Phase N (Workstream D) — per-attribute provenance. Maps an entity
+    # column name (`legal_name`, `dba_name`, `website_url`,
+    # `state_of_incorporation`) to the source id that most recently wrote
+    # it. Empty `{}` until the gold-layer reconciler has run.
+    field_attribution: dict[str, str]
+
+
+# Per-check result status. The SDK auto-attaches `Accept-Version` (see
+# `_request.py`) so the wire returns the Phase N (Workstream A) widened
+# enum verbatim. Legacy values still appear today because no adapter
+# emits the new ones yet; both shapes are listed so when adapters DO
+# start emitting them, calling code renders correctly without a type-only
+# SDK release.
+CheckStatus = Literal[
+    "pass",
+    "fail",
+    "inconclusive",
+    "error",
+    "pending",
+    "clear",
+    "exact_match",
+    "probable_match",
+]
 
 
 class VerificationResult(TypedDict, total=False):
     check_type: CheckType
-    status: Literal["pass", "fail", "inconclusive"]
+    status: CheckStatus
     confidence: float
     origin: str
     determinism: str
@@ -202,3 +244,78 @@ class VerificationBundle(TypedDict):
     object: Literal["verification_bundle"]
     entity: Entity
     verification: Verification
+
+
+# ─── Certifications (Phase N, Workstream B) ──────────────────────────────
+
+CertificationStatus = Literal[
+    "active",
+    "pending",
+    "expired",
+    "suspended",
+    "revoked",
+    "denied",
+    "not_certified",
+]
+
+ClassificationCategory = Literal[
+    "small_business",
+    "minority_owned",
+    "women_owned",
+    "veteran_owned",
+    "service_disabled_veteran",
+    "disability_owned",
+    "lgbt_owned",
+]
+
+ClassificationEthnicSubcategory = Literal[
+    "african_american",
+    "hispanic_american",
+    "asian_pacific_american",
+    "subcontinent_asian_american",
+    "native_american",
+    "other",
+]
+
+
+class Classification(TypedDict, total=False):
+    category: ClassificationCategory
+    # Meaningful only when category == "minority_owned". API CHECK
+    # constraint enforces this — every minority_owned classification
+    # carries a subcategory; no other category does.
+    ethnic_subcategory: ClassificationEthnicSubcategory | None
+    raw_label: str
+
+
+class CertificationSource(TypedDict):
+    name: str
+    mapping_version: str
+    retrieved_at: str
+
+
+class Certification(TypedDict, total=False):
+    object: Literal["certification"]
+    id: str
+    entity_id: str
+    issuer: str
+    cert_number: str
+    status: CertificationStatus
+    issued_at: str | None
+    expires_at: str | None
+    # Derived at read time from `expires_at` against the per-request
+    # `expiring_within_days` threshold (default 60).
+    expiring_soon: bool
+    retrieved_at: str
+    classifications: list[Classification]
+    source: CertificationSource
+    created_at: str
+    updated_at: str
+
+
+class CertificationsListResponse(TypedDict):
+    object: Literal["list"]
+    data: list[Certification]
+    total: int
+    has_more: bool
+    limit: int
+    offset: int

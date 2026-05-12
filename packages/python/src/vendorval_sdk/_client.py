@@ -9,6 +9,7 @@ import httpx
 from ._request import resolve_config
 from ._version import API_VERSION, VERSION
 from ._webhooks import construct_event
+from .resources._certifications import CertificationsResource
 from .resources._entities import EntitiesResource
 from .resources._meta import MetaResource
 from .resources._monitors import MonitorsResource
@@ -56,6 +57,7 @@ class Vendorval:
         self._http = http_client or httpx.Client(timeout=self._cfg.timeout)
         self.entities = EntitiesResource(self._cfg, self._http)
         self.verifications = VerificationsResource(self._cfg, self._http)
+        self.certifications = CertificationsResource(self._cfg, self._http)
         self.monitors = MonitorsResource(self._cfg, self._http)
         self.providers = ProvidersResource(self._cfg, self._http)
         self.meta = MetaResource(self._cfg, self._http)

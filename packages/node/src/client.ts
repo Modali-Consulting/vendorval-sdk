@@ -1,3 +1,4 @@
+import { CertificationsResource } from "./resources/certifications.js";
 import { EntitiesResource } from "./resources/entities.js";
 import { JobsResource } from "./resources/jobs.js";
 import { MetaResource } from "./resources/meta.js";
@@ -15,6 +16,7 @@ export class Vendorval {
 
   readonly entities: EntitiesResource;
   readonly verifications: VerificationsResource;
+  readonly certifications: CertificationsResource;
   readonly monitors: MonitorsResource;
   readonly providers: ProvidersResource;
   readonly meta: MetaResource;
@@ -29,6 +31,7 @@ export class Vendorval {
     this.options = resolveOptions(options);
     this.entities = new EntitiesResource(this.options);
     this.verifications = new VerificationsResource(this.options);
+    this.certifications = new CertificationsResource(this.options);
     this.monitors = new MonitorsResource(this.options);
     this.providers = new ProvidersResource(this.options);
     this.meta = new MetaResource(this.options);

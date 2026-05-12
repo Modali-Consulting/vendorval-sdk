@@ -9,6 +9,7 @@ import httpx
 from ._request import resolve_config
 from ._version import API_VERSION, VERSION
 from ._webhooks import construct_event
+from .resources._certifications import AsyncCertificationsResource
 from .resources._entities import AsyncEntitiesResource
 from .resources._meta import AsyncMetaResource
 from .resources._monitors import AsyncMonitorsResource
@@ -53,6 +54,7 @@ class AsyncVendorval:
         self._http = http_client or httpx.AsyncClient(timeout=self._cfg.timeout)
         self.entities = AsyncEntitiesResource(self._cfg, self._http)
         self.verifications = AsyncVerificationsResource(self._cfg, self._http)
+        self.certifications = AsyncCertificationsResource(self._cfg, self._http)
         self.monitors = AsyncMonitorsResource(self._cfg, self._http)
         self.providers = AsyncProvidersResource(self._cfg, self._http)
         self.meta = AsyncMetaResource(self._cfg, self._http)
