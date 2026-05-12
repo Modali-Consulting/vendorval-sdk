@@ -82,6 +82,24 @@ class IdentifierInput(TypedDict):
     value: str
 
 
+class IssuerQualifiedIdentifier(TypedDict):
+    """Explicit issuer-qualified identifier value.
+
+    The five identifier types whose value is meaningless without an issuer
+    (state_entity_id, diversity_cert_id, contractor_license_id,
+    medicaid_provider_id, wcb_employer_number) accept either this dict OR a
+    string with the issuer encoded inline as ``"<ISSUER>:<value>"``
+    (e.g. ``"NY-DOS:1234567"``). The API collapses both forms to the
+    canonical ``"<ISSUER>:<value>"`` string before lookup.
+    """
+
+    value: str
+    issuer: str
+
+
+IssuerQualifiedIdentifierInput = Union[str, IssuerQualifiedIdentifier]
+
+
 # Object-keyed identifier input accepted by `/v1/verify` (e.g. `{"uei": "..."}`).
 # Mirrors the keys the API allows — `name` and `dba` are fuzzy-lookup helpers,
 # not identifiers, so they're excluded here.
@@ -95,12 +113,14 @@ class VerifyIdentifierObject(TypedDict, total=False):
     state_registration: str
     domain: str
     phone: str
-    # Phase N (Workstream C) — 6 new issuer-qualified identifier types.
-    state_entity_id: str
-    diversity_cert_id: str
-    contractor_license_id: str
-    medicaid_provider_id: str
-    wcb_employer_number: str
+    # Phase N (Workstream C) — issuer-qualified identifiers. Each accepts
+    # either an embedded `"<ISSUER>:<value>"` string or an explicit
+    # `{"value": ..., "issuer": ...}` dict.
+    state_entity_id: IssuerQualifiedIdentifierInput
+    diversity_cert_id: IssuerQualifiedIdentifierInput
+    contractor_license_id: IssuerQualifiedIdentifierInput
+    medicaid_provider_id: IssuerQualifiedIdentifierInput
+    wcb_employer_number: IssuerQualifiedIdentifierInput
     npi: str
 
 
@@ -169,6 +189,13 @@ class IdentifierRecord(TypedDict, total=False):
     last_seen_at: str
 
 
+# One per-source verification/registration history record. Until
+# Phase O.A.reconciler shipped this was returned on `entity["sources"]`;
+# it now lives on `entity["registrations"]` because `sources` was
+# repurposed to carry per-source frozen blocks (see `Entity.sources` below).
+SourceRegistration = dict[str, Any]
+
+
 class Entity(TypedDict, total=False):
     object: Literal["entity"]
     id: str
@@ -188,7 +215,16 @@ class Entity(TypedDict, total=False):
     identifiers: list[IdentifierRecord]
     addresses: list[Any]
     sam_gov: Any | None
-    sources: list[Any]
+    # Per-source verification/registration history. Renamed from the legacy
+    # top-level `sources` field in Phase O.A.reconciler — the name was
+    # needed for the frozen-block map below.
+    registrations: list[SourceRegistration]
+    # Phase O.A.reconciler — per-source frozen blocks keyed by source name
+    # (`ny_dos`, `sam_us`, etc.). Each value is the source-specific block
+    # the reconciler froze when it matched a silver row to this entity,
+    # carrying `retrieved_at` plus the source's verbatim fields. Empty `{}`
+    # until a reconciler has run for at least one source.
+    sources: dict[str, dict[str, Any]]
     # Phase N (Workstream D) — per-attribute provenance. Maps an entity
     # column name (`legal_name`, `dba_name`, `website_url`,
     # `state_of_incorporation`) to the source id that most recently wrote

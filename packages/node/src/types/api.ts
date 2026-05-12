@@ -9,6 +9,22 @@ import type {
   VerificationMode,
 } from "./shared.js";
 
+/**
+ * Issuer-qualified identifier value. The five identifier types whose value
+ * is meaningless without an issuer (`state_entity_id`, `diversity_cert_id`,
+ * `contractor_license_id`, `medicaid_provider_id`, `wcb_employer_number`)
+ * accept either an explicit `{ value, issuer }` object OR a string with
+ * the issuer encoded inline as `"<ISSUER>:<value>"` (e.g. `"NY-DOS:1234567"`).
+ * The API collapses both forms to the canonical `"<ISSUER>:<value>"` string
+ * before lookup, so they're behaviorally equivalent.
+ */
+export interface IssuerQualifiedIdentifier {
+  value: string;
+  issuer: string;
+}
+
+export type IssuerQualifiedIdentifierInput = string | IssuerQualifiedIdentifier;
+
 export interface LookupIdentifiers {
   uei?: string;
   tin?: string;
@@ -21,7 +37,18 @@ export interface LookupIdentifiers {
   dba?: string;
   domain?: string;
   phone?: string;
+  /** Deprecated alias for `state_entity_id` — kept during the Phase N transition window. */
   state_registration?: string;
+  // Phase N (Workstream C) — issuer-qualified identifiers. Each accepts
+  // either an embedded `"<ISSUER>:<value>"` string or an explicit
+  // `{ value, issuer }` object.
+  state_entity_id?: IssuerQualifiedIdentifierInput;
+  diversity_cert_id?: IssuerQualifiedIdentifierInput;
+  contractor_license_id?: IssuerQualifiedIdentifierInput;
+  medicaid_provider_id?: IssuerQualifiedIdentifierInput;
+  wcb_employer_number?: IssuerQualifiedIdentifierInput;
+  /** National Provider Identifier (US healthcare). 10-digit numeric string. */
+  npi?: string;
 }
 
 export interface LookupRequest {

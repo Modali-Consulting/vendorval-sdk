@@ -5,6 +5,10 @@ This file is an aggregate index. Per-package changelogs live alongside each pack
 - [`packages/node/CHANGELOG.md`](./packages/node/CHANGELOG.md)
 - [`packages/python/CHANGELOG.md`](./packages/python/CHANGELOG.md)
 
+## 2026-05-12
+
+- **Phase O.A.reconciler lookup-response reshape** (Node 0.4.0 + Python 0.4.0). Type-only release coordinated with the vendorval-api `entity.sources` change and vendorval-data #19 (NY DOS reconciler Dagster asset). Breaking: `Entity.sources` repurposed from `Array<…>` of per-source registration history records (now `Entity.registrations`) to a `Record<string, Record<string, unknown>>` map of frozen per-source blocks keyed by source name. Also adds typed issuer-qualified identifier inputs (`state_entity_id`, `diversity_cert_id`, `contractor_license_id`, `medicaid_provider_id`, `wcb_employer_number`) accepting either `"<ISSUER>:<value>"` strings or `{value, issuer}` objects.
+
 ## 2026-05-08
 
 - **Tier A entity fields + tightened `LookupResponse.match` union** (#5). The Node `Entity` interface (`packages/node/src/types/shared.ts`) and the Python `Entity` TypedDict (`packages/python/src/vendorval_sdk/types.py`) gain `dba_name`, `website_url`, and `state_of_incorporation` (all `string | None`). Node `LookupResponse.match` tightened from `"found" | "not_found" | "ambiguous" | "fuzzy"` to the actual API contract `"exact" | "fuzzy" | "not_found"`; `confidence` documented as fuzzy-only.

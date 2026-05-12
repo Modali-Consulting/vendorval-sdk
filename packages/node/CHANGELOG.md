@@ -1,5 +1,37 @@
 # vendorval-sdk (Node)
 
+## 0.4.0 — 2026-05-12
+
+**Type-only release for the Phase O.A.reconciler lookup-response reshape.** Coordinated with vendorval-api `entity.sources` change and vendorval-data #19 (NY DOS reconciler Dagster asset).
+
+**Breaking — `Entity.sources` shape changed:**
+
+- The legacy `Entity.sources: Array<Record<string, unknown>>` (per-source verification/registration history records) is now `Entity.registrations: SourceRegistration[]`.
+- The `Entity.sources` field is now `Record<string, Record<string, unknown>>` — a map keyed by source name (`ny_dos`, `sam_us`, …) carrying frozen per-source blocks the reconciler produced when it matched silver rows to this entity.
+
+```diff
+- for (const src of entity.sources ?? []) { /* render history record */ }
++ for (const reg of entity.registrations ?? []) { /* render history record */ }
++ const nyDosBlock = entity.sources?.ny_dos;  // verbatim NY DOS fields
+```
+
+**New — issuer-qualified identifier inputs:**
+
+`LookupIdentifiers` now accepts `state_entity_id`, `diversity_cert_id`, `contractor_license_id`, `medicaid_provider_id`, and `wcb_employer_number` as either an embedded string `"<ISSUER>:<value>"` or an explicit `{ value, issuer }` object. Both forms are collapsed to the canonical string server-side.
+
+```ts
+client.entities.lookup({
+  identifiers: {
+    tin: "12-3456789",
+    state_entity_id: { value: "1234567", issuer: "NY-DOS" },
+    // or equivalently:
+    // state_entity_id: "NY-DOS:1234567",
+  },
+});
+```
+
+Also: top-level `npi` is now a typed field on `LookupIdentifiers` (was already in `IdentifierType` union).
+
 ## 0.2.0 — 2026-05-05
 
 **Breaking:** Renamed npm package from `vendorval` to `vendorval-sdk`. Update consumers:
