@@ -124,6 +124,14 @@ export interface AddressRecord {
   created_at: string;
 }
 
+/**
+ * One per-source verification/registration history record. Until Phase
+ * O.A.reconciler shipped this was returned on `entity.sources[]`; it now
+ * lives on `entity.registrations[]` because `sources` was repurposed to
+ * carry per-source frozen blocks (see `Entity.sources` below).
+ */
+export type SourceRegistration = Record<string, unknown>;
+
 export interface Entity {
   object: "entity";
   id: string;
@@ -145,7 +153,22 @@ export interface Entity {
   identifiers: IdentifierRecord[];
   addresses: AddressRecord[];
   sam_gov?: Record<string, unknown> | null;
-  sources?: Array<Record<string, unknown>>;
+  /**
+   * Per-source verification/registration history. Renamed from the legacy
+   * top-level `sources` field in Phase O.A.reconciler — the name was
+   * needed for the frozen-block map below.
+   */
+  registrations?: SourceRegistration[];
+  /**
+   * Phase O.A.reconciler — per-source frozen blocks keyed by source name
+   * (`ny_dos`, `sam_us`, etc.). Each value is the source-specific block
+   * the reconciler froze when it matched a silver row to this entity,
+   * carrying `retrieved_at` plus the source's verbatim fields. Empty `{}`
+   * until a reconciler has run for at least one source. Use this for
+   * source-nested display (e.g. "what does NY DOS say about this
+   * vendor?"). See `/api-reference/lookup#entitysources--per-source-blocks`.
+   */
+  sources?: Record<string, Record<string, unknown>>;
   /**
    * Phase N (Workstream D) — per-attribute provenance. Maps an entity
    * column name (`legal_name`, `dba_name`, `website_url`,
