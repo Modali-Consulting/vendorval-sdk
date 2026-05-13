@@ -354,6 +354,19 @@ export interface CertificationsListResponse {
 
 export interface CertificationsListParams {
   entity_id?: string;
+  /**
+   * Identifier-resolved scoping. The server normalizes + hashes + joins on
+   * `identifiers.value_hash` (same path as `/v1/entities/lookup`). Saves the
+   * caller a 2-step lookup-then-query flow. Tenant-scoped at the API.
+   * Passing multiple identifiers that resolve to different entities → 400.
+   */
+  tin?: string;
+  uei?: string;
+  duns?: string;
+  lei?: string;
+  vat_id?: string;
+  state_entity_id?: string;
+  npi?: string;
   issuer?: string;
   status?: CertificationStatus;
   /** 1–365. Restricts to certs whose `expires_at` is within N days. */

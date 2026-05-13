@@ -20,14 +20,36 @@ from .._request import ResolvedConfig, execute_async, execute_sync, prepare
 def _build_query(
     *,
     entity_id: str | None,
+    tin: str | None,
+    uei: str | None,
+    duns: str | None,
+    lei: str | None,
+    vat_id: str | None,
+    state_entity_id: str | None,
+    npi: str | None,
     issuer: str | None,
     status: str | None,
     expiring_within_days: int | None,
     limit: int | None,
     offset: int | None,
 ) -> dict[str, Any]:
+    """Build the GET query payload.
+
+    Identifier params (tin / uei / duns / lei / vat_id / state_entity_id /
+    npi) are normalized + hashed + joined server-side via the same path
+    `/v1/entities/lookup` uses. Saves callers a 2-step lookup-then-query
+    flow. Tenant-scoped at the API; passing multiple identifiers that
+    resolve to different entities → 400.
+    """
     return {
         "entity_id": entity_id,
+        "tin": tin,
+        "uei": uei,
+        "duns": duns,
+        "lei": lei,
+        "vat_id": vat_id,
+        "state_entity_id": state_entity_id,
+        "npi": npi,
         "issuer": issuer,
         "status": status,
         "expiring_within_days": expiring_within_days,
@@ -45,6 +67,13 @@ class CertificationsResource:
         self,
         *,
         entity_id: str | None = None,
+        tin: str | None = None,
+        uei: str | None = None,
+        duns: str | None = None,
+        lei: str | None = None,
+        vat_id: str | None = None,
+        state_entity_id: str | None = None,
+        npi: str | None = None,
         issuer: str | None = None,
         status: str | None = None,
         expiring_within_days: int | None = None,
@@ -58,6 +87,11 @@ class CertificationsResource:
         re-querying for the count. Access rows via `response["data"]`,
         or call `response.to_dict()` to work with the full payload as a
         plain dictionary.
+
+        Identifier params (`tin`, `uei`, `duns`, `lei`, `vat_id`,
+        `state_entity_id`, `npi`) scope to the entity that matches the
+        identifier — server normalizes + hashes + joins the same way
+        `/v1/entities/lookup` does. Saves a 2-step lookup-then-query flow.
         """
         prepared = prepare(
             self._cfg,
@@ -65,6 +99,13 @@ class CertificationsResource:
             path="/v1/certifications",
             query=_build_query(
                 entity_id=entity_id,
+                tin=tin,
+                uei=uei,
+                duns=duns,
+                lei=lei,
+                vat_id=vat_id,
+                state_entity_id=state_entity_id,
+                npi=npi,
                 issuer=issuer,
                 status=status,
                 expiring_within_days=expiring_within_days,
@@ -95,6 +136,13 @@ class AsyncCertificationsResource:
         self,
         *,
         entity_id: str | None = None,
+        tin: str | None = None,
+        uei: str | None = None,
+        duns: str | None = None,
+        lei: str | None = None,
+        vat_id: str | None = None,
+        state_entity_id: str | None = None,
+        npi: str | None = None,
         issuer: str | None = None,
         status: str | None = None,
         expiring_within_days: int | None = None,
@@ -107,6 +155,13 @@ class AsyncCertificationsResource:
             path="/v1/certifications",
             query=_build_query(
                 entity_id=entity_id,
+                tin=tin,
+                uei=uei,
+                duns=duns,
+                lei=lei,
+                vat_id=vat_id,
+                state_entity_id=state_entity_id,
+                npi=npi,
                 issuer=issuer,
                 status=status,
                 expiring_within_days=expiring_within_days,

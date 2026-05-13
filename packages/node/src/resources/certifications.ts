@@ -35,6 +35,14 @@ export class CertificationsResource {
   ): Promise<CertificationsListResponse & { _requestId: string | null }> {
     const query: Record<string, string | number | boolean | undefined> = {};
     if (params.entity_id !== undefined) query.entity_id = params.entity_id;
+    // Identifier-resolved scoping — server normalizes + hashes + joins.
+    if (params.tin !== undefined) query.tin = params.tin;
+    if (params.uei !== undefined) query.uei = params.uei;
+    if (params.duns !== undefined) query.duns = params.duns;
+    if (params.lei !== undefined) query.lei = params.lei;
+    if (params.vat_id !== undefined) query.vat_id = params.vat_id;
+    if (params.state_entity_id !== undefined) query.state_entity_id = params.state_entity_id;
+    if (params.npi !== undefined) query.npi = params.npi;
     if (params.issuer !== undefined) query.issuer = params.issuer;
     if (params.status !== undefined) query.status = params.status;
     if (params.expiring_within_days !== undefined) {
