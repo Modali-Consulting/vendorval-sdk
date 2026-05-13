@@ -1,5 +1,20 @@
 # vendorval-sdk (Python)
 
+## 0.5.0 — 2026-05-12
+
+**Additive release** — adds identifier-resolved scoping params on `client.certifications.list`.
+
+`certifications.list` (sync + async) now accepts `tin`, `uei`, `duns`, `lei`, `vat_id`, `state_entity_id`, and `npi` keyword arguments alongside the existing `entity_id`. Server-side `/v1/certifications` normalizes + hashes + joins the same way `/v1/entities/lookup` does — saves callers a 2-step lookup-then-query flow. Passing multiple identifiers that resolve to different entities → 400.
+
+```python
+# Before: 2 round-trips
+lookup = client.entities.lookup(identifiers={"tin": "12-3456789"})
+certs = client.certifications.list(entity_id=lookup["entity"]["id"])
+
+# After: 1 round-trip
+certs = client.certifications.list(tin="12-3456789")
+```
+
 ## 0.4.0 — 2026-05-12
 
 **Type-only release for the Phase O.A.reconciler lookup-response reshape.** Coordinated with vendorval-api `entity.sources` change and vendorval-data #19 (NY DOS reconciler Dagster asset).
