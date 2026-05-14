@@ -1,3 +1,12 @@
 packages:
   - "packages/node"
   - "examples/node/*"
+
+# Force-update transitive deps with known CVEs (esbuild <=0.24.2 dev-server
+# request smuggling; vite <=6.4.1 path traversal). Both reach us through
+# vitest's dependency chain. Override applies repo-wide.
+overrides:
+  esbuild: ">=0.25.0"
+  # Vite ≤6.4.1 had the .map path-traversal CVE; 6.4.2 patches it. Pin
+  # within the v6 range since vitest 2.x doesn't support vite 7/8.
+  vite: "^6.4.2"
