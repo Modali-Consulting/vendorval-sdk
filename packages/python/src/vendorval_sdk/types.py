@@ -235,7 +235,7 @@ class Entity(TypedDict, total=False):
     # (self-declared statements) — these are externally-mandated filings
     # (FARA today, federal lobbying / state ethics planned). Empty `[]`
     # until a reconciler writes rows.
-    regulatory_disclosures: list["RegulatoryDisclosure"]
+    regulatory_disclosures: list[RegulatoryDisclosure]
 
 
 class RegulatoryDisclosure(TypedDict, total=False):
