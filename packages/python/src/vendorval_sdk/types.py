@@ -230,6 +230,53 @@ class Entity(TypedDict, total=False):
     # `state_of_incorporation`) to the source id that most recently wrote
     # it. Empty `{}` until the gold-layer reconciler has run.
     field_attribution: dict[str, str]
+    # Public regulatory disclosures attached to the entity. A third lane
+    # distinct from exclusions (procurement bars) and classifications
+    # (self-declared statements) — these are externally-mandated filings
+    # (FARA today, federal lobbying / state ethics planned). Empty `[]`
+    # until a reconciler writes rows.
+    regulatory_disclosures: list[RegulatoryDisclosure]
+
+
+class RegulatoryDisclosure(TypedDict, total=False):
+    """One public regulatory filing attached to an entity.
+
+    First source: DOJ FARA. Each row represents one
+    registrant↔foreign-principal binding. A registrant with N
+    principals lands as N rows sharing `registration_number` but with
+    distinct ids.
+
+    FARA registrants stay bid-eligible — the disclosure is regulatory
+    transparency, not a bar. Procurement teams that key on
+    `exclusions` filter "barred"; teams that key on
+    `regulatory_disclosures` filter "needs additional review."
+
+    Future regulatory feeds (federal lobbying, state ethics) widen
+    `source` and `disclosure_type` as the gold-side CHECK constraints
+    widen.
+    """
+
+    id: str
+    source: str
+    """Currently `"fara_doj"`; widens with each new regulatory feed."""
+
+    disclosure_type: str
+    """Currently `"foreign_agent"`; widens with each new feed."""
+
+    registration_number: str
+    """Agency-side filing identifier (FARA Registration Number)."""
+
+    # Denormalized for the common FARA shape. Future disclosure types
+    # may leave these null and surface their own fields on the raw row
+    # stored server-side.
+    foreign_principal_name: str | None
+    foreign_principal_country: str | None
+    foreign_principal_registration_date: str | None  # YYYY-MM-DD
+    foreign_principal_termination_date: str | None  # null while active
+    foreign_principal_address: dict[str, Any] | None
+
+    created_at: str
+    updated_at: str
 
 
 # Per-check result status. The SDK auto-attaches `Accept-Version` (see
