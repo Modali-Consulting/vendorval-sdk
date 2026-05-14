@@ -5,6 +5,14 @@ This file is an aggregate index. Per-package changelogs live alongside each pack
 - [`packages/node/CHANGELOG.md`](./packages/node/CHANGELOG.md)
 - [`packages/python/CHANGELOG.md`](./packages/python/CHANGELOG.md)
 
+## 2026-05-14
+
+- **`entity.regulatory_disclosures[]`** (Node 0.7.0 + Python 0.7.0). Adds a new `RegulatoryDisclosure` type (Node `interface` + Python `TypedDict`) and an optional `regulatory_disclosures` array on `Entity`. Type-only release coordinated with vendorval-api PR #280 (the new `entity_regulatory_disclosures` gold table + lookup-response surface) and vendorval-data PR #41 (the `fara_reconciler` that writes the rows).
+
+  A third lane on the lookup response — distinct from `exclusions` (procurement bars) and `classifications` (self-declared statements). Disclosures are externally-mandated public filings the entity stays bid-eligible under. First source: DOJ FARA — each row is one registrant↔foreign-principal binding; a registrant with N principals lands as N rows sharing `registration_number`.
+
+  Field is optional + populated only when the API has reconciled rows for the entity. Empty array on entities the reconciler hasn't reached yet.
+
 ## 2026-05-13
 
 - **Certification.entity_legal_name** (Node 0.6.0 + Python 0.6.0). Type-only release: the `Certification` shape gains `entity_legal_name?: string | null` to mirror the new field on `/v1/certifications` (vendorval-api #276). Callers can now render the human-readable entity name alongside `entity_id` without a follow-up `/v1/entities/lookup` per row. Field is nullable — the API returns null when the entity row is missing (e.g. a cert orphaned by a transactional delete).

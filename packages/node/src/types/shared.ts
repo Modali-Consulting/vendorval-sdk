@@ -178,6 +178,58 @@ export interface Entity {
    * `/api-reference/lookup#field_attribution--per-attribute-provenance`.
    */
   field_attribution?: Record<string, string>;
+  /**
+   * Public regulatory disclosures attached to the entity. A third lane
+   * distinct from exclusions (procurement bars) and classifications
+   * (self-declared statements) — these are externally-mandated
+   * filings (FARA today, federal lobbying / state ethics planned).
+   *
+   * Empty `[]` until a reconciler has written rows. Customer compliance
+   * code that asks "has this vendor disclosed any regulatory filings?"
+   * keys on this lane. See
+   * `/api-reference/lookup#entityregulatory_disclosures`.
+   */
+  regulatory_disclosures?: RegulatoryDisclosure[];
+}
+
+/**
+ * One public regulatory filing attached to an entity. First source:
+ * DOJ FARA (Foreign Agents Registration Act). Each row represents one
+ * registrant↔foreign-principal binding. A registrant with N principals
+ * lands as N rows sharing `registration_number` but with distinct ids.
+ *
+ * FARA registrants are still bid-eligible — the disclosure is just
+ * regulatory transparency, not a bar. Procurement teams that key on
+ * `exclusions` filter "barred"; teams that key on
+ * `regulatory_disclosures` filter "needs additional review."
+ *
+ * Future regulatory feeds (federal lobbying, state ethics) widen
+ * `source` and `disclosure_type` (closed sets on the API side; the
+ * gold table's CHECK constraints widen with each new feed).
+ */
+export interface RegulatoryDisclosure {
+  id: string;
+  /** Currently `"fara_doj"`; widens with each new regulatory feed. */
+  source: string;
+  /** Currently `"foreign_agent"`; widens with each new feed. */
+  disclosure_type: string;
+  /** Agency-side filing identifier (FARA Registration Number). */
+  registration_number: string;
+  /**
+   * Denormalized for the common FARA shape. Future disclosure types
+   * may leave these null and surface their own fields on the raw row
+   * stored server-side.
+   */
+  foreign_principal_name?: string | null;
+  foreign_principal_country?: string | null;
+  /** ISO-8601 date (YYYY-MM-DD) when the principal was added. */
+  foreign_principal_registration_date?: string | null;
+  /** ISO-8601 date when the binding ended, null while active. */
+  foreign_principal_termination_date?: string | null;
+  /** Free-form address dict; sub-fields nullable per row. */
+  foreign_principal_address?: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
