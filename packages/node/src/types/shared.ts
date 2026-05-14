@@ -320,6 +320,14 @@ export interface Certification {
   object?: "certification";
   id: string;
   entity_id: string;
+  /**
+   * Human-readable legal name of the entity this cert is attached to.
+   * Surfaces alongside `entity_id` so callers can render the entity
+   * name without a follow-up `/v1/entities/lookup`. Nullable — the
+   * API returns null when the entity row is missing (e.g. a cert
+   * orphaned by a transactional delete).
+   */
+  entity_legal_name?: string | null;
   issuer: string;
   cert_number: string;
   status: CertificationStatus;

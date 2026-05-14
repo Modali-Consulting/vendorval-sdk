@@ -333,6 +333,11 @@ class Certification(TypedDict, total=False):
     object: Literal["certification"]
     id: str
     entity_id: str
+    # Human-readable legal name of the entity this cert is attached to.
+    # Surfaces alongside `entity_id` so callers can render the entity
+    # name without a follow-up `/v1/entities/lookup`. Nullable — the
+    # API returns null when the entity row is missing.
+    entity_legal_name: str | None
     issuer: str
     cert_number: str
     status: CertificationStatus

@@ -163,6 +163,7 @@ describe("CertificationsResource (Phase N Workstream B)", () => {
               object: "certification",
               id: "cert_01",
               entity_id: "ent_01",
+              entity_legal_name: "Acme Federal LLC",
               issuer: "NY-DMWBD",
               cert_number: "NY-MWBE-1001",
               status: "active",
@@ -208,6 +209,7 @@ describe("CertificationsResource (Phase N Workstream B)", () => {
 
     expect(page.data).toHaveLength(1);
     expect(page.data[0]!.issuer).toBe("NY-DMWBD");
+    expect(page.data[0]!.entity_legal_name).toBe("Acme Federal LLC");
     expect(page.data[0]!.classifications[0]!.category).toBe("minority_owned");
     // Pagination metadata surfaces on the Page so callers don't re-query
     // for the count.

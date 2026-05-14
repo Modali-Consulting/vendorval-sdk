@@ -97,6 +97,7 @@ def test_certifications_list_forwards_filters() -> None:
                         "object": "certification",
                         "id": "cert_01",
                         "entity_id": "ent_01",
+                        "entity_legal_name": "Acme Federal LLC",
                         "issuer": "NY-DMWBD",
                         "cert_number": "NY-MWBE-1001",
                         "status": "active",
@@ -143,6 +144,7 @@ def test_certifications_list_forwards_filters() -> None:
     rows = result["data"]
     assert len(rows) == 1
     assert rows[0]["issuer"] == "NY-DMWBD"
+    assert rows[0]["entity_legal_name"] == "Acme Federal LLC"
 
 
 @respx.mock
