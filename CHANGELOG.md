@@ -5,6 +5,10 @@ This file is an aggregate index. Per-package changelogs live alongside each pack
 - [`packages/node/CHANGELOG.md`](./packages/node/CHANGELOG.md)
 - [`packages/python/CHANGELOG.md`](./packages/python/CHANGELOG.md)
 
+## 2026-05-13
+
+- **Certification.entity_legal_name** (Node 0.6.0 + Python 0.6.0). Type-only release: the `Certification` shape gains `entity_legal_name?: string | null` to mirror the new field on `/v1/certifications` (vendorval-api #276). Callers can now render the human-readable entity name alongside `entity_id` without a follow-up `/v1/entities/lookup` per row. Field is nullable — the API returns null when the entity row is missing (e.g. a cert orphaned by a transactional delete).
+
 ## 2026-05-12
 
 - **Certifications identifier-resolved scoping** (Node 0.5.0 + Python 0.5.0). Adds `tin`, `uei`, `duns`, `lei`, `vat_id`, `state_entity_id`, and `npi` params on `certifications.list`. Server-side `/v1/certifications` already supported these; this release exposes them through the SDK signatures. Saves callers the 2-step lookup-then-query flow.
