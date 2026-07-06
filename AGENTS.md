@@ -1,9 +1,72 @@
 # AGENTS.md
 
-This repository follows the guidance in [`CLAUDE.md`](./CLAUDE.md) — it applies to AI coding agents and human contributors alike.
+## What this repo is
 
-Key points:
+`vendorval-sdk` is the home of VendorVal's official, open-source client libraries:
 
-- **This repo is public.** Never commit secrets, production data, or internal-only references; keep changelogs and code comments written for SDK consumers.
-- Two SDKs — Node (`packages/node`) and Python (`packages/python`) — ship the same surface and must stay at parity.
-- Build, test, and release commands and conventions live in [`CLAUDE.md`](./CLAUDE.md), [`CONTRIBUTING.md`](./CONTRIBUTING.md), and [`RELEASING.md`](./RELEASING.md).
+- **Node / TypeScript** — `packages/node`, published to npm as [`vendorval-sdk`](https://www.npmjs.com/package/vendorval-sdk).
+- **Python** — `packages/python`, published to PyPI as [`vendorval-sdk`](https://pypi.org/project/vendorval-sdk/).
+
+Both wrap the [VendorVal REST API](https://docs.vendorval.com) (`https://api.vendorval.com/v1`) and expose the same surface so the two languages stay at parity. VendorVal is a vendor-verification product by VendorVal LLC; `specs/openapi.json` is a snapshot of the VendorVal API's OpenAPI spec, mirrored from its upstream releases.
+
+> **This repository is public.** Treat everything here as world-readable. Do not commit secrets, production or customer data, internal hostnames, internal issue/PR numbers, internal infrastructure details, or internal-only tooling. Write changelog entries and code comments for SDK consumers, not for an internal audience.
+
+## Layout
+
+```
+packages/node/      TypeScript SDK (npm)
+packages/python/    Python SDK (PyPI)
+examples/           Runnable per-language examples
+specs/openapi.json  Snapshot of the API spec (generated — do not hand-edit)
+scripts/            Spec-sync + type-parity helpers
+```
+
+## Working on the Node SDK
+
+```bash
+pnpm install
+pnpm -r build      # bundle with tsup (ESM + CJS + .d.ts)
+pnpm -r test       # vitest
+pnpm --filter vendorval-sdk typecheck
+```
+
+## Working on the Python SDK
+
+```bash
+cd packages/python
+uv sync
+uv run pytest
+uv run ruff check src tests
+uv run mypy src
+```
+
+## Conventions
+
+- **Keep the two SDKs at parity.** A public type or method added on one side should have an equivalent on the other; `scripts/check-type-parity.mjs` (and the `type-parity` workflow) guards this.
+- **Don't hand-edit `specs/openapi.json`.** Run `node scripts/sync-openapi.mjs` to refresh it from the upstream API release.
+- **Conventional commits** (`feat:`, `fix:`, `docs:`, `chore:`, …). Each package keeps its own `CHANGELOG.md`; the root `CHANGELOG.md` is an aggregate index.
+- **Releases** are tag-driven and publish via OIDC trusted publishing — see [`RELEASING.md`](./RELEASING.md). Bump the runtime `VERSION` constant (`packages/node/src/version.ts`, `packages/python/src/vendorval_sdk/_version.py`) alongside the package manifest.
+
+## Security
+
+Never commit credentials. A local `.env` (used for live smoke tests) is gitignored and must stay that way; its values are for local use only. Publishing uses OIDC, so no registry tokens belong in the repository.
+
+## Agent workflow
+
+Read nearby code and existing patterns before changing anything. Prefer small, reviewable diffs. Run the most relevant build/test/lint commands after changes. Explain what changed and what you did not test.
+
+## Security
+
+Never commit secrets, credentials, or customer data. Never run destructive production operations without explicit approval.
+
+## Do not
+
+- Add dependencies without checking existing manifests first
+- Large refactors unless requested
+- Invent architecture facts — verify in code or mark "verify before use"
+
+## Issue tracking
+
+Bugs and features: GitHub Issues in this repo → auto-added to the [VendorVal project board](https://github.com/orgs/vendorval/projects/1) when org secret `ADD_TO_PROJECT_PAT` is set. See https://github.com/vendorval/vendorval/blob/main/docs/github-project-setup.md
+
+Product roadmap, SOPs, and compliance docs live in [`vendorval/vendorval`](https://github.com/vendorval/vendorval). Not tracked in Modali Accelerate.
