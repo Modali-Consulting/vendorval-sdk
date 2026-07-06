@@ -52,3 +52,13 @@ uv run mypy src
 ## Security
 
 Never commit credentials. A local `.env` (used for live smoke tests) is gitignored and must stay that way; its values are for local use only. Publishing uses OIDC, so no registry tokens belong in the repository.
+
+## Issue Tracking
+
+All bugs and feature requests for this repository are tracked on the **VendorVal** GitHub project: https://github.com/orgs/vendorval/projects/1
+
+New issues are **automatically added** via `.github/workflows/add-to-project.yml` (org secret `ADD_TO_PROJECT_PAT` required — see `vendorval/docs/github-project-setup.md`).
+
+When triaging, set **Workstream**, **Tier**, and **Priority** on the project board.
+
+Manual add: `gh issue create --project "VendorVal"` or `gh project item-add 1 --owner vendorval --url <issue-url>`.
