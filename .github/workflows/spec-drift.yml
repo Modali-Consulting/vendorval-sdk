@@ -17,9 +17,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+      - name: Require VENDORVAL_API_READ_TOKEN
+        # Fail loud if the secret is missing — an empty token would fall
+        # back to unauthenticated requests and 404 on the private repo,
+        # which looks identical to "no release exists".
+        run: |
+          if [ -z "${{ secrets.VENDORVAL_API_READ_TOKEN }}" ]; then
+            echo "::error::VENDORVAL_API_READ_TOKEN secret is not set (needs a fine-grained PAT with contents:read on vendorval/vendorval-api)"
+            exit 1
+          fi
       - name: Sync openapi.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Fine-grained PAT with contents:read on vendorval/vendorval-api.
+          # The default GITHUB_TOKEN is scoped to this repo and cannot see
+          # the private vendorval-api repo's releases.
+          GITHUB_TOKEN: ${{ secrets.VENDORVAL_API_READ_TOKEN }}
         run: node scripts/sync-openapi.mjs
       - name: Open PR if changed
         uses: peter-evans/create-pull-request@v6
