@@ -1,4 +1,25 @@
-*                       @vendorval/maintainers
-/packages/node/         @vendorval/maintainers
-/packages/python/       @vendorval/maintainers
-/specs/                 @vendorval/maintainers
+# Code owners for vendorval-sdk.
+# Listed owners are automatically requested for review on PRs that touch
+# matching paths. There is intentionally NO global `*` owner, so routine
+# changes are not gated — only the security-sensitive surfaces below
+# (webhook-signature crypto, API-key transport, publish/build config, and
+# CI/CD) require review.
+# See https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Webhook signature verification (HMAC / timing-safe comparison).
+/packages/node/src/webhooks.ts                       @BrandonChiazza
+/packages/python/src/vendorval_sdk/_webhooks.py      @BrandonChiazza
+
+# API-key handling and request/auth transport.
+/packages/node/src/request.ts                        @BrandonChiazza
+/packages/node/src/client.ts                         @BrandonChiazza
+/packages/python/src/vendorval_sdk/_request.py       @BrandonChiazza
+/packages/python/src/vendorval_sdk/_client.py        @BrandonChiazza
+/packages/python/src/vendorval_sdk/_async_client.py  @BrandonChiazza
+
+# Publish / build configuration (npm + PyPI provenance).
+/packages/node/package.json                          @BrandonChiazza
+/packages/python/pyproject.toml                      @BrandonChiazza
+
+# CI/CD, release workflows, and repo security config.
+/.github/                                            @BrandonChiazza

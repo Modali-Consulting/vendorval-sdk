@@ -1,0 +1,31 @@
+name: Secret Scan (gitleaks)
+
+# gitleaks catches custom secret shapes (e.g. `vv_live_*` API keys and
+# DATABASE_URL connection strings) that GitHub's native push-protection
+# detectors miss. Runs on every push and pull request.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so gitleaks can scan the whole commit range.
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: "true"
+          # gitleaks-action is free for public repositories, and this repo is
+          # public. TODO: if this repo is ever made private, set GITLEAKS_LICENSE
+          # (a free org-level license key) — the action requires it for
+          # private/org repositories.
