@@ -5,33 +5,79 @@ updates:
     directory: "/packages/node"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     groups:
-      # Collapse the routine minor/patch churn into a single PR per week.
+      # Collapse ALL routine minor/patch churn into a single PR per week.
       minor-and-patch:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Skip *major* bumps for dev-only tooling — noisy and not security-relevant.
+      # Direct runtime deps still get major PRs (security matters there), and
+      # security updates are never suppressed by these rules.
+      # NOTE: Dependabot's `ignore` has no `dependency-type` key, so "dev-only"
+      # is expressed via the dev-tooling name patterns below.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript-eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@typescript-eslint/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitest/*"
+        update-types: ["version-update:semver-major"]
 
   # Published Python SDK package (pip / pyproject).
   - package-ecosystem: "pip"
     directory: "/packages/python"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     groups:
       minor-and-patch:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Skip *major* bumps for dev/build tooling — noisy and not security-relevant.
+      # Runtime deps still get major PRs, and security updates are never ignored.
+      - dependency-name: "pytest*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "ruff"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "mypy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "black"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "flit-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "hatchling"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "setuptools"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "build"
+        update-types: ["version-update:semver-major"]
 
-  # Keep GitHub Actions pinned versions current.
+  # Keep GitHub Actions pinned versions current — collapse ALL action bumps
+  # (including majors) into one PR per week.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
     groups:
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
+      github-actions:
+        patterns:
+          - "*"
