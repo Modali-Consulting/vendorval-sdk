@@ -6,6 +6,11 @@ packages:
 # - vite: keep on the patched 6.x line; 7.x drops Node 18 support which CI still
 #   builds against. 6.4.3 patches the path-traversal / fs.deny advisories.
 # - esbuild under tsup: lift to the patched 0.28.x line (tsup ships 0.27.x).
+# - nanoid / postcss: transitive under vite's dev pipeline; both pinned below
+#   their patched release by parent ranges, so they need an override rather
+#   than a bump. Bounded to their current major.
 overrides:
   vite: "^6.4.3"
   tsup>esbuild: "^0.28.1"
+  nanoid: ">=3.3.18 <4"
+  postcss: ">=8.5.18 <9"
