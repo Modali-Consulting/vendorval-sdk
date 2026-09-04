@@ -1,0 +1,48 @@
+# gitleaks configuration.
+#
+# Extends the upstream default rule set — no rule is ever disabled.
+
+[extend]
+useDefault = true
+
+# ── VendorVal-specific rules ────────────────────────────────────────────
+# The workflow header states gitleaks exists here because GitHub's native push
+# protection "misses VendorVal's custom credentials — vv_live_* / vv_test_*
+# API keys, Supabase DATABASE_URLs and webhook secrets". Until now that was
+# aspirational: this file carried only allowlists and relied on the upstream
+# default rules, none of which know these shapes.
+#
+# Deliberately NOT added to any allowlist in this file. Allowlists here target
+# upstream rules (`generic-api-key`, `curl-auth-header`), so a real credential
+# committed anywhere -- docs, a test fixture, a settings file -- still trips
+# these rules. That is the point: a docs-tree allowlist is exactly how a
+# live-shaped key slipped past the scan in vendorval-docs (fixed in docs #117).
+#
+# False positives are structurally impossible against the placeholders actually
+# in use — `vv_live_your_key_here`, `vv_mcp_<your-key>`, `vv_mcp_abc123...` are
+# none of them 64 hex characters.
+
+[[rules]]
+id = "vendorval-api-key"
+description = "VendorVal API key (vv_live_ / vv_test_ / vv_mcp_ + 64 hex)"
+# Format is exact, from platform's generateApiKey():
+#   `${prefix}_${randomBytes(32).toString('hex')}`  ->  64 lowercase hex chars.
+regex = '''\bvv_(?:live|test|mcp)_[0-9a-f]{64}\b'''
+keywords = ["vv_live_", "vv_test_", "vv_mcp_"]
+entropy = 3.0
+
+[[rules]]
+id = "supabase-postgres-dsn"
+description = "Supabase Postgres connection string with an inline password"
+# postgresql://user:PASSWORD@<host>.supabase.(co|com)/... -- the DATABASE_URL
+# shape. Requires a >=8-char password whose FIRST character is not $ { or <, so
+# `postgresql://postgres@host/db` (no password),
+# `postgresql://postgres:$PGPASSWORD@...` (shell interpolation) and
+# `postgresql://postgres:<password>@...` (docs placeholder) do not match.
+#
+# Expressed as a character class, NOT a negative lookahead: gitleaks compiles
+# with Go RE2, which has no lookahead support. A `(?!...)` here does not merely
+# fail to match -- it PANICS the whole config on startup, so every scan would
+# die. Verified against gitleaks 8.30.1.
+regex = '''postgres(?:ql)?(?:\+psycopg)?://[^:@\s/]+:[^@\s/${<][^@\s/]{7,}@[^\s/]*supabase\.(?:co|com)'''
+keywords = ["supabase.co", "supabase.com"]
